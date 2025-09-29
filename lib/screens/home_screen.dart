@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'add_expense_screen.dart';
-import 'category_screen.dart';
-import 'statistics_screen.dart';
+import 'login_screen.dart';
+import 'expense_list_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -10,41 +9,88 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Expense Manager"),
+        title: Text('Beranda'),
         backgroundColor: Colors.blue,
+        actions: [
+          IconButton(
+            onPressed: () {
+              // Logout dengan pushAndRemoveUntil
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+                (route) => false, // Hapus semua route sebelumnya
+              );
+            },
+            icon: Icon(Icons.logout),
+          ),
+        ],
       ),
-      body: const Center(
-        child: Text("Dashboard Utama"),
-      ),
-      drawer: Drawer(
-        child: ListView(
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text("Menu", style: TextStyle(color: Colors.white, fontSize: 20)),
+            Text(
+              'Dashboard',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.blue,
+              ),
             ),
-            ListTile(
-              title: const Text("Tambah Pengeluaran"),
-              onTap: () {
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const AddExpenseScreen()));
-              },
-            ),
-            ListTile(
-              title: const Text("Kategori"),
-              onTap: () {
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const CategoryScreen()));
-              },
-            ),
-            ListTile(
-              title: const Text("Statistik"),
-              onTap: () {
-                Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const StatisticsScreen()));
-              },
+            SizedBox(height: 20),
+            Expanded(
+              child: GridView.count(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                children: [
+                  _buildDashboardCard('Pengeluaran', Icons.attach_money, Colors.green, () {
+                    // Navigasi ke ExpenseListScreen
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ExpenseListScreen()),
+                    );
+                  }),
+                  _buildDashboardCard('Profil', Icons.person, Colors.blue, null),
+                  _buildDashboardCard('Pesan', Icons.message, Colors.orange, null),
+                  _buildDashboardCard('Pengaturan', Icons.settings, Colors.purple, null),
+                ],
+              ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDashboardCard(String title, IconData icon, Color color, VoidCallback? onTap) {
+    return Card(
+      elevation: 4,
+      child: Builder(
+        builder: (context) => InkWell(
+          onTap: onTap ?? () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Fitur $title segera hadir!')),
+            );
+          },
+          child: Container(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, size: 48, color: color),
+                SizedBox(height: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
