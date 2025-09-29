@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
 import 'expense_list_screen.dart';
+import 'profile_screen.dart'; // tambahkan import profile
 import '../services/expense_service.dart';
 import '../utils/currency_utils.dart';
 import '../utils/export_utils.dart';
@@ -16,6 +17,16 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Expense Manager'),
         backgroundColor: Colors.blue,
+        leading: IconButton(
+          tooltip: 'Profile',
+          icon: const Icon(Icons.account_circle),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const ProfileScreen()),
+            );
+          },
+        ),
         actions: [
           IconButton(
             tooltip: 'Logout',
@@ -69,7 +80,7 @@ class HomeScreen extends StatelessWidget {
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
                 children: [
-                  // 1) Expenses (daftar + edit dari screen kamu)
+                  // 1) Expenses
                   _buildDashboardCard(
                     'Expenses',
                     Icons.attach_money,
@@ -101,7 +112,7 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
 
-                  // 3) Categories (kelola kategori)
+                  // 3) Categories
                   _buildDashboardCard(
                     'Categories',
                     Icons.category,
@@ -111,7 +122,7 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
 
-                  // 4) Statistics (grafik & ringkasan)
+                  // 4) Statistics
                   _buildDashboardCard(
                     'Statistics',
                     Icons.bar_chart,
@@ -121,7 +132,7 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
 
-                  // 5) Export PDF (baru)
+                  // 5) Export PDF
                   _buildDashboardCard(
                     'Export PDF',
                     Icons.picture_as_pdf,
@@ -137,7 +148,7 @@ class HomeScreen extends StatelessWidget {
                     },
                   ),
 
-                  // 6) Setting (placeholder)
+                  // 6) Setting
                   _buildDashboardCard(
                     'Setting',
                     Icons.settings,
