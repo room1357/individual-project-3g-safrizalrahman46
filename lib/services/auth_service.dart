@@ -30,7 +30,15 @@ class AuthService {
     _users.add(user);
 
     // Simpan ke SharedPreferences
-    await prefs.setString('users', jsonEncode(_users.map((u) => u.toJson()).toList()));
+    await prefs.setString(
+      'users',
+      jsonEncode(_users.map((u) => u.toJson()).toList()),
+    );
+
+    // Set sebagai currentUser
+    _currentUser = user;
+    await prefs.setString('currentUser', jsonEncode(user.toJson()));
+
     return true;
   }
 
@@ -46,7 +54,9 @@ class AuthService {
     }
 
     try {
-      final user = _users.firstWhere((u) => u.email == email && u.password == password);
+      final user = _users.firstWhere(
+        (u) => u.email == email && u.password == password,
+      );
       _currentUser = user;
 
       // Simpan current user ke SharedPreferences
@@ -71,5 +81,41 @@ class AuthService {
     if (userJson != null) {
       _currentUser = User.fromJson(jsonDecode(userJson));
     }
+  }
+
+  /// Update profile
+  Future<void> updateProfile(String username, String fullName) async {
+    if (_currentUser == null) return;
+
+    final prefs = await SharedPreferences.getInstance();
+
+    // Update current user
+    _currentUser = User(
+      id: _currentUser!.id,
+      username: username,
+      fullName: fullName,
+      email: _currentUser!.email,
+      password: _currentUser!.password,
+    );
+
+    // Update list users
+    final usersJson = prefs.getString('users');
+    if (usersJson != null) {
+      final decoded = jsonDecode(usersJson) as List;
+      _users.clear();
+      _users.addAll(decoded.map((u) => User.fromJson(u)));
+    }
+
+    final index = _users.indexWhere((u) => u.id == _currentUser!.id);
+    if (index != -1) {
+      _users[index] = _currentUser!;
+    }
+
+    // Simpan lagi ke SharedPreferences
+    await prefs.setString(
+      'users',
+      jsonEncode(_users.map((u) => u.toJson()).toList()),
+    );
+    await prefs.setString('currentUser', jsonEncode(_currentUser!.toJson()));
   }
 }
