@@ -9,7 +9,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Masuk'),
+        title: Text('ENTER'),
         backgroundColor: Colors.blue,
       ),
       body: Padding(
@@ -66,7 +66,7 @@ class LoginScreen extends StatelessWidget {
                   padding: EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: Text(
-                  'MASUK',
+                  'ENTER',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -77,7 +77,7 @@ class LoginScreen extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Belum punya akun? "),
+                Text("Don't have an account yet? "),
                 TextButton(
                   onPressed: () {
                     // Navigasi ke RegisterScreen dengan push
@@ -86,7 +86,7 @@ class LoginScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (context) => const RegisterScreen()),
                     );
                   },
-                  child: Text('Daftar'),
+                  child: Text('Register'),
                 ),
               ],
             ),

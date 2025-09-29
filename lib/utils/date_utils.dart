@@ -1,5 +1,2 @@
-class DateUtilsHelper {
-  static String formatDate(DateTime date) {
-    return "${date.day}/${date.month}/${date.year}";
-  }
-}
+String formatYmd(DateTime d) =>
+    '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
