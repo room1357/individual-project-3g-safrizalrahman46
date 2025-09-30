@@ -18,7 +18,24 @@ class ExpenseService extends ChangeNotifier {
   Future<void> loadInitialData() async {
     _expenses = await _storage.loadExpenses();
     _categories = await _storage.loadCategories();
+
+    ensureDefaultCategories(); // 🔑 Pastikan kategori default ada
+
     notifyListeners();
+  }
+
+  // ---------- Category default ----------
+  void ensureDefaultCategories() {
+    if (_categories.isEmpty) {
+      _categories.addAll([
+        CategoryModel(id: 'c1', name: 'Makanan'),
+        CategoryModel(id: 'c2', name: 'Transportasi'),
+        CategoryModel(id: 'c3', name: 'Utilitas'),
+        CategoryModel(id: 'c4', name: 'Hiburan'),
+        CategoryModel(id: 'c5', name: 'Pendidikan'),
+      ]);
+      _storage.saveCategories(_categories);
+    }
   }
 
   // ---------- Expense CRUD ----------
@@ -43,7 +60,6 @@ class ExpenseService extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// Ambil data berdasarkan id. Mengembalikan null jika tidak ditemukan.
   Expense? getById(String id) {
     try {
       return _expenses.firstWhere((e) => e.id == id);
@@ -56,7 +72,9 @@ class ExpenseService extends ChangeNotifier {
   bool addCategory(String name) {
     final n = name.trim();
     if (n.isEmpty) return false;
-    if (_categories.any((c) => c.name.toLowerCase() == n.toLowerCase())) return false;
+    if (_categories.any((c) => c.name.toLowerCase() == n.toLowerCase())) {
+      return false;
+    }
     final id = DateTime.now().millisecondsSinceEpoch.toString();
     _categories.add(CategoryModel(id: id, name: n));
     _storage.saveCategories(_categories);
@@ -67,11 +85,12 @@ class ExpenseService extends ChangeNotifier {
   bool renameCategory(String id, String newName) {
     final n = newName.trim();
     if (n.isEmpty) return false;
-    if (_categories.any((c) => c.name.toLowerCase() == n.toLowerCase())) return false;
+    if (_categories.any((c) => c.name.toLowerCase() == n.toLowerCase())) {
+      return false;
+    }
     final idx = _categories.indexWhere((c) => c.id == id);
     if (idx == -1) return false;
 
-    // update kategori
     final oldName = _categories[idx].name;
     _categories[idx] = CategoryModel(id: id, name: n);
 

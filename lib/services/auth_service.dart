@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
+import '../services/storage_service.dart';
 
 class AuthService {
   static final AuthService instance = AuthService._internal();
@@ -39,6 +40,9 @@ class AuthService {
     _currentUser = user;
     await prefs.setString('currentUser', jsonEncode(user.toJson()));
 
+    // Integrasi ke StorageService → setiap user punya data sendiri
+    StorageServiceManager.instance.currentUserId = user.id;
+
     return true;
   }
 
@@ -61,6 +65,10 @@ class AuthService {
 
       // Simpan current user ke SharedPreferences
       await prefs.setString('currentUser', jsonEncode(user.toJson()));
+
+      // Integrasi ke StorageService
+      StorageServiceManager.instance.currentUserId = user.id;
+
       return true;
     } catch (e) {
       return false;
@@ -72,6 +80,9 @@ class AuthService {
     _currentUser = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('currentUser');
+
+    // Reset user id di storage
+    StorageServiceManager.instance.currentUserId = null;
   }
 
   /// Load current user saat startup
@@ -80,6 +91,9 @@ class AuthService {
     final userJson = prefs.getString('currentUser');
     if (userJson != null) {
       _currentUser = User.fromJson(jsonDecode(userJson));
+
+      // Set juga ke storage
+      StorageServiceManager.instance.currentUserId = _currentUser!.id;
     }
   }
 

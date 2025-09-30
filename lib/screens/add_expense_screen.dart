@@ -16,12 +16,17 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   final _amountC = TextEditingController();
   final _descC = TextEditingController();
   DateTime _date = DateTime.now();
-  String? _catId; // pakai name untuk category di service (sederhana)
+  String? _catId;
 
   @override
   void initState() {
     super.initState();
-    final cats = ExpenseService.instance.categories;
+    final svc = ExpenseService.instance;
+
+    // Pastikan kategori default tersedia
+    svc.ensureDefaultCategories();
+
+    final cats = svc.categories;
     _catId = cats.isNotEmpty ? cats.first.id : null;
   }
 
@@ -76,32 +81,50 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
             children: [
               TextFormField(
                 controller: _titleC,
-                decoration: const InputDecoration(labelText: 'Judul', border: OutlineInputBorder()),
-                validator: (v) => (v == null || v.trim().isEmpty) ? 'Judul wajib diisi' : null,
+                decoration: const InputDecoration(
+                  labelText: 'Judul',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Judul wajib diisi' : null,
               ),
               const SizedBox(height: 12),
               TextFormField(
                 controller: _amountC,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Jumlah (Rp)', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                  labelText: 'Jumlah (Rp)',
+                  border: OutlineInputBorder(),
+                ),
                 validator: (v) {
-                  final d = double.tryParse((v ?? '').replaceAll(',', '.'));
+                  final d =
+                      double.tryParse((v ?? '').replaceAll(',', '.'));
                   if (d == null || d <= 0) return 'Masukkan jumlah yang valid';
                   return null;
                 },
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                initialValue: _catId,
-                decoration: const InputDecoration(labelText: 'Kategori', border: OutlineInputBorder()),
-                items: cats.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
+                value: _catId,
+                decoration: const InputDecoration(
+                  labelText: 'Kategori',
+                  border: OutlineInputBorder(),
+                ),
+                items: cats
+                    .map((c) =>
+                        DropdownMenuItem(value: c.id, child: Text(c.name)))
+                    .toList(),
                 onChanged: (v) => setState(() => _catId = v),
+                validator: (v) => v == null ? 'Pilih kategori' : null,
               ),
               const SizedBox(height: 12),
               InkWell(
                 onTap: _pickDate,
                 child: InputDecorator(
-                  decoration: const InputDecoration(labelText: 'Tanggal', border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: 'Tanggal',
+                    border: OutlineInputBorder(),
+                  ),
                   child: Text(formatYmd(_date)),
                 ),
               ),
@@ -109,12 +132,18 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
               TextFormField(
                 controller: _descC,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: 'Deskripsi', border: OutlineInputBorder()),
+                decoration: const InputDecoration(
+                  labelText: 'Deskripsi',
+                  border: OutlineInputBorder(),
+                ),
               ),
               const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton(onPressed: _save, child: const Text('Simpan')),
+                child: ElevatedButton(
+                  onPressed: _save,
+                  child: const Text('Simpan'),
+                ),
               ),
             ],
           ),
