@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 import 'login_screen.dart'; // arahkan ke halaman login kamu
 
 class OnboardingScreen extends StatefulWidget {
@@ -9,9 +10,12 @@ class OnboardingScreen extends StatefulWidget {
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen> {
+class _OnboardingScreenState extends State<OnboardingScreen>
+    with SingleTickerProviderStateMixin {
   final PageController _controller = PageController();
   int _currentIndex = 0;
+  bool _isPressed = false;
+  late AnimationController _gradientController;
 
   final List<Map<String, String>> _pages = [
     {
@@ -40,6 +44,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Animasi shimmer gradient looping
+    _gradientController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+  }
+
+  @override
+  void dispose() {
+    _gradientController.dispose();
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -107,7 +129,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   width: _currentIndex == index ? 24 : 8,
                   decoration: BoxDecoration(
                     color: _currentIndex == index
-                        ? Colors.green
+                        ? const Color(0xFF3BAA81)
                         : Colors.grey[300],
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -117,48 +139,94 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
             const SizedBox(height: 40),
 
-            // 🟩 Tombol hijau gradasi lembut
+            // 🟩 Tombol interaktif premium
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
               child: GestureDetector(
-                onTap: () {
-                  if (_currentIndex == _pages.length - 1) {
-                    _completeOnboarding();
-                  } else {
-                    _controller.nextPage(
-                      duration: const Duration(milliseconds: 400),
-                      curve: Curves.easeInOut,
-                    );
-                  }
+                onTapDown: (_) => setState(() => _isPressed = true),
+                onTapUp: (_) {
+                  setState(() => _isPressed = false);
+                  Future.delayed(const Duration(milliseconds: 120), () {
+                    if (_currentIndex == _pages.length - 1) {
+                      _completeOnboarding();
+                    } else {
+                      _controller.nextPage(
+                        duration: const Duration(milliseconds: 400),
+                        curve: Curves.easeInOut,
+                      );
+                    }
+                  });
                 },
-                child: Container(
-                  width: double.infinity,
-                  height: 60,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6EE7B7), Color(0xFF3BAA81)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        offset: const Offset(0, 8),
-                        blurRadius: 20,
-                      ),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    _currentIndex == _pages.length - 1
-                        ? 'Get Started'
-                        : 'Next',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                onTapCancel: () => setState(() => _isPressed = false),
+                child: AnimatedScale(
+                  duration: const Duration(milliseconds: 150),
+                  scale: _isPressed ? 0.94 : 1.0,
+                  curve: Curves.easeOut,
+                  child: AnimatedBuilder(
+                    animation: _gradientController,
+                    builder: (context, _) {
+                      final shimmerValue =
+                          (0.5 + 0.5 * _gradientController.value);
+
+                      return Container(
+                        width: double.infinity,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              Color.lerp(
+                                  const Color(0xFF6EE7B7),
+                                  const Color(0xFF3BAA81),
+                                  shimmerValue)!,
+                              Color.lerp(
+                                  const Color(0xFF3BAA81),
+                                  const Color(0xFF6EE7B7),
+                                  shimmerValue)!,
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.green.withOpacity(
+                                  _isPressed ? 0.15 : 0.25),
+                              offset: const Offset(0, 8),
+                              blurRadius: _isPressed ? 8 : 18,
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _currentIndex == _pages.length - 1
+                                  ? 'Get Started'
+                                  : 'Next',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            AnimatedOpacity(
+                              opacity:
+                                  _currentIndex == _pages.length - 1 ? 0.0 : 1.0,
+                              duration: const Duration(milliseconds: 300),
+                              child: const Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Colors.white,
+                                size: 22,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
