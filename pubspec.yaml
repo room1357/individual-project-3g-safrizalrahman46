@@ -29,6 +29,7 @@ flutter:
   assets:
     - assets/icon/app_icon.png
     - assets/logo.png
+    - assets/images/
 
 
 flutter_launcher_icons:
