@@ -1,3 +1,6 @@
+## 🚀 SAFRIZAL RAHMAN_19_SIB 3G
+2341760151
+
 # 💸 Expense Tracker App
 
 A modern Flutter application designed to help you **track daily expenses** easily and beautifully.  
