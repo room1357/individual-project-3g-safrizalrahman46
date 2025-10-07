@@ -233,14 +233,17 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
 
+      // === AppBar ===
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
+        centerTitle: true,
         title: const Text(
           'Dashboard',
           style: TextStyle(
             color: Colors.black87,
             fontWeight: FontWeight.w700,
+            fontSize: 18,
           ),
         ),
         actions: [
@@ -263,12 +266,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
 
+      // === Body ===
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Kartu ringkasan
+            // 🔹 Summary Cards
             Row(
               children: [
                 Expanded(
@@ -276,25 +280,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Total Expense",
                     value: rp(svc.totalAll),
                     color: Colors.white,
-                    textColor: Colors.black,
-                    icon: Icons.credit_card,
+                    textColor: Colors.black87,
+                    icon: Icons.credit_card_outlined,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: _summaryCard(
                     title: "Categories",
                     value: rp(svc.totalAll),
-                    color: const Color(0xFFB7F3D0),
-                    textColor: Colors.green.shade700,
-                    icon: Icons.category,
+                    color: const Color(0xFFD9FBE3),
+                    textColor: const Color(0xFF166534),
+                    icon: Icons.category_outlined,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
 
-            // Tab buttons
+            const SizedBox(height: 28),
+
+            // 🔹 Tab Menu
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -304,26 +309,28 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
 
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(3, (i) {
-                return AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  width: selectedTab == i ? 30 : 10,
-                  height: 3,
-                  decoration: BoxDecoration(
-                    color: selectedTab == i
-                        ? Colors.green
-                        : Colors.green.shade100,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                );
-              }),
+            const SizedBox(height: 10),
+            Center(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: List.generate(3, (i) {
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    width: selectedTab == i ? 30 : 10,
+                    height: 3,
+                    decoration: BoxDecoration(
+                      color: selectedTab == i
+                          ? const Color(0xFF22C55E)
+                          : const Color(0xFFDCFCE7),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  );
+                }),
+              ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 28),
 
             const Text(
               'Latest Expense',
@@ -333,9 +340,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
 
-            // Daftar pengeluaran dummy
+            // 🔹 Dummy List
             Column(
               children: List.generate(5, (index) {
                 return _expenseTile(
@@ -350,18 +357,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
 
-      floatingActionButton: Container(
+      // === Floating Button ===
+      floatingActionButton: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
               color: Color(0x806EE7B7),
-              blurRadius: 20,
-              spreadRadius: 4,
+              blurRadius: 25,
+              spreadRadius: 6,
             ),
           ],
         ),
         child: FloatingActionButton(
+          elevation: 4,
           onPressed: () async {
             final ok = await Navigator.pushNamed(context, '/add');
             if (ok == true && context.mounted) {
@@ -372,33 +382,49 @@ class _HomeScreenState extends State<HomeScreen> {
             }
           },
           backgroundColor: const Color(0xFF22C55E),
-          child: const Icon(Icons.add, size: 32),
+          child: const Icon(Icons.add, size: 36),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 10,
-        color: Colors.white,
-        elevation: 10,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _bottomIcon(Icons.home, 0),
-              _bottomIcon(Icons.category, 1),
-              const SizedBox(width: 40),
-              _bottomIcon(Icons.bar_chart, 2),
-              _bottomIcon(Icons.settings, 3),
-            ],
+      // === Bottom Navigation Bar ===
+      bottomNavigationBar: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Color(0x22000000),
+              blurRadius: 15,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: BottomAppBar(
+          elevation: 0,
+          color: Colors.transparent,
+          shape: const CircularNotchedRectangle(),
+          notchMargin: 10,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _bottomIcon(Icons.home_rounded, 0),
+                _bottomIcon(Icons.category_outlined, 1),
+                const SizedBox(width: 40),
+                _bottomIcon(Icons.bar_chart_rounded, 2),
+                _bottomIcon(Icons.settings_rounded, 3),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  // === Summary Card ===
   Widget _summaryCard({
     required String title,
     required String value,
@@ -407,32 +433,33 @@ class _HomeScreenState extends State<HomeScreen> {
     required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.shade200,
-            blurRadius: 8,
-            offset: const Offset(2, 4),
+            blurRadius: 10,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: textColor),
-          const SizedBox(height: 8),
+          Icon(icon, color: textColor, size: 26),
+          const SizedBox(height: 10),
           Text(
             title,
             style: TextStyle(
-              color: textColor.withOpacity(0.9),
-              fontWeight: FontWeight.w600,
+              color: textColor.withOpacity(0.8),
+              fontWeight: FontWeight.w500,
               fontSize: 14,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             value,
             style: TextStyle(
@@ -446,6 +473,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // === Tab Button ===
   Widget _tabButton(int index, String text) {
     final bool isActive = selectedTab == index;
     return GestureDetector(
@@ -467,17 +495,17 @@ class _HomeScreenState extends State<HomeScreen> {
         duration: const Duration(milliseconds: 250),
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: isActive ? Colors.green.shade100 : Colors.white,
+          color: isActive ? const Color(0xFFDCFCE7) : Colors.white,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isActive ? Colors.green : Colors.grey.shade300,
+            color: isActive ? const Color(0xFF22C55E) : const Color(0xFFE5E7EB),
             width: 1,
           ),
         ),
         child: Text(
           text,
           style: TextStyle(
-            color: isActive ? Colors.green.shade800 : Colors.black87,
+            color: isActive ? const Color(0xFF15803D) : Colors.black87,
             fontWeight: FontWeight.w600,
             fontSize: 13,
           ),
@@ -486,6 +514,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // === Expense Item ===
   Widget _expenseTile({
     required String title,
     required String date,
@@ -493,7 +522,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String amount,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -501,13 +530,14 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             children: [
               Container(
-                width: 40,
-                height: 40,
+                width: 44,
+                height: 44,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.fastfood, color: Colors.grey),
+                child: const Icon(Icons.fastfood_outlined,
+                    color: Colors.grey, size: 24),
               ),
               const SizedBox(width: 12),
               Column(
@@ -549,10 +579,12 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // === Bottom Bar Icon ===
   Widget _bottomIcon(IconData icon, int index) {
     final isActive = selectedTab == index;
-    return IconButton(
-      onPressed: () {
+    return GestureDetector(
+      onTap: () {
+        setState(() => selectedTab = index);
         if (index == 0) {
           Navigator.pushNamed(context, '/');
         } else if (index == 1) {
@@ -565,10 +597,18 @@ class _HomeScreenState extends State<HomeScreen> {
           );
         }
       },
-      icon: Icon(
-        icon,
-        color: isActive ? Colors.green : Colors.grey.shade400,
-        size: 26,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(6),
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFFDCFCE7) : Colors.transparent,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(
+          icon,
+          color: isActive ? const Color(0xFF22C55E) : Colors.grey.shade400,
+          size: isActive ? 28 : 26,
+        ),
       ),
     );
   }

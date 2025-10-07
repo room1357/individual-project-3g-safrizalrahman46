@@ -122,10 +122,14 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _fullnameController = TextEditingController();
+  final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   bool _loading = false;
   bool _obscurePassword = true;
+  bool _obscureConfirm = true;
   bool _agree = false;
 
   String? _errorMessage;
@@ -148,7 +152,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final newUser = User(
       id: const Uuid().v4(),
-      username: _fullnameController.text.trim(),
+      username: _usernameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text.trim(),
       fullName: _fullnameController.text.trim(),
@@ -173,29 +177,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  InputDecoration _inputStyle(String hint) {
+  InputDecoration _inputStyle(String hint, {bool isPassword = false, bool isConfirm = false}) {
     final borderColor = const Color(0xFFE6E6E6);
     return InputDecoration(
       hintText: hint,
       filled: true,
       fillColor: Colors.white,
       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
-      prefixIcon: hint == 'Password'
-          ? const Icon(Icons.lock_outline)
-          : hint == 'Email'
-              ? const Icon(Icons.email_outlined)
-              : const Icon(Icons.person_outline),
-      suffixIcon: hint == 'Password'
+      suffixIcon: isPassword
           ? IconButton(
               icon: Icon(
                 _obscurePassword
                     ? Icons.visibility_outlined
                     : Icons.visibility_off_outlined,
               ),
-              onPressed: () =>
-                  setState(() => _obscurePassword = !_obscurePassword),
+              onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
             )
-          : null,
+          : isConfirm
+              ? IconButton(
+                  icon: Icon(
+                    _obscureConfirm
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined,
+                  ),
+                  onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
+                )
+              : null,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: borderColor),
@@ -244,11 +251,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               children: [
                 const SizedBox(height: 10),
 
-                // 🔴 Error Alert Box (seperti di login)
                 if (_errorMessage != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 12, vertical: 10),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                     margin: const EdgeInsets.only(bottom: 20),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFFE6E6),
@@ -256,8 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.error_outline,
-                            color: Colors.redAccent),
+                        const Icon(Icons.error_outline, color: Colors.redAccent),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
@@ -275,9 +279,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 // Full Name
                 TextFormField(
                   controller: _fullnameController,
-                  decoration: _inputStyle('Name'),
-                  validator: (v) =>
-                      v == null || v.isEmpty ? 'Nama wajib diisi' : null,
+                  decoration: _inputStyle('Full Name'),
+                  validator: (v) => v == null || v.isEmpty ? 'Full name required' : null,
+                ),
+                const SizedBox(height: 16),
+
+                // Username
+                TextFormField(
+                  controller: _usernameController,
+                  decoration: _inputStyle('Username'),
+                  validator: (v) => v == null || v.isEmpty ? 'Username required' : null,
                 ),
                 const SizedBox(height: 16),
 
@@ -286,8 +297,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _emailController,
                   decoration: _inputStyle('Email'),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Email wajib diisi';
-                    if (!v.contains('@')) return 'Email tidak valid';
+                    if (v == null || v.isEmpty) return 'Email required';
+                    if (!v.contains('@')) return 'Invalid email';
                     return null;
                   },
                 ),
@@ -297,12 +308,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
-                  decoration: _inputStyle('Password'),
+                  decoration: _inputStyle('Password', isPassword: true),
                   validator: (v) {
-                    if (v == null || v.isEmpty) return 'Password wajib diisi';
-                    if (v.length < 6) {
-                      return 'Password minimal 6 karakter';
-                    }
+                    if (v == null || v.isEmpty) return 'Password required';
+                    if (v.length < 6) return 'Min 6 characters';
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Confirm Password
+                TextFormField(
+                  controller: _confirmPasswordController,
+                  obscureText: _obscureConfirm,
+                  decoration: _inputStyle('Confirm Password', isConfirm: true),
+                  validator: (v) {
+                    if (v == null || v.isEmpty) return 'Please confirm password';
+                    if (v != _passwordController.text) return 'Passwords do not match';
                     return null;
                   },
                 ),
@@ -349,27 +371,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Tombol Sign Up
                 _loading
-                    ? const Center(
-                        child: CircularProgressIndicator(
-                          color: Color(0xFF3BAA81),
-                        ),
-                      )
-                    : PrimaryButton(
-                        text: 'Sign Up',
-                        onPressed: _register,
-                      ),
+                    ? const Center(child: CircularProgressIndicator(color: Color(0xFF3BAA81)))
+                    : PrimaryButton(text: 'Sign Up', onPressed: _register),
+
                 const SizedBox(height: 24),
 
-                // Sudah punya akun
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      'Already have an account? ',
-                      style: TextStyle(color: Colors.black54),
-                    ),
+                    const Text('Already have an account? ',
+                        style: TextStyle(color: Colors.black54)),
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: const Text(
