@@ -134,6 +134,8 @@ import '../services/auth_service.dart';
 import 'register_screen.dart';
 import 'home_screen.dart';
 import '../widgets/primary_button.dart';
+import 'forgot_password_screen.dart';
+
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -219,8 +221,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: Row(
                     children: const [
-                      Icon(Icons.error_outline,
-                          color: Color(0xFFE53935), size: 22),
+                      Icon(
+                        Icons.error_outline,
+                        color: Color(0xFFE53935),
+                        size: 22,
+                      ),
                       SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -248,20 +253,30 @@ class _LoginScreenState extends State<LoginScreen> {
                   prefixIcon: const Icon(Icons.email_outlined),
                   filled: true,
                   fillColor: Colors.white,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 18,
+                    horizontal: 16,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: borderColor, width: 1.2),
+                    borderSide: const BorderSide(
+                      color: borderColor,
+                      width: 1.2,
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: borderColor, width: 1.2),
+                    borderSide: const BorderSide(
+                      color: borderColor,
+                      width: 1.2,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(
-                        color: Color(0xFF3BAA81), width: 1.5),
+                      color: Color(0xFF3BAA81),
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
@@ -290,20 +305,30 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   filled: true,
                   fillColor: Colors.white,
-                  contentPadding:
-                      const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                  contentPadding: const EdgeInsets.symmetric(
+                    vertical: 18,
+                    horizontal: 16,
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: borderColor, width: 1.2),
+                    borderSide: const BorderSide(
+                      color: borderColor,
+                      width: 1.2,
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: borderColor, width: 1.2),
+                    borderSide: const BorderSide(
+                      color: borderColor,
+                      width: 1.2,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: const BorderSide(
-                        color: Color(0xFF3BAA81), width: 1.5),
+                      color: Color(0xFF3BAA81),
+                      width: 1.5,
+                    ),
                   ),
                 ),
               ),
@@ -318,14 +343,36 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 20),
 
               // Forgot Password
-              const Text(
-                'Forgot Password?',
-                style: TextStyle(
-                  color: Color(0xFF3BAA81),
-                  fontWeight: FontWeight.w600,
+              // const Text(
+              //   'Forgot Password?',
+              //   style: TextStyle(
+              //     color: Color(0xFF3BAA81),
+              //     fontWeight: FontWeight.w600,
+              //   ),
+              // ),
+              // const SizedBox(height: 16),
+                      // Forgot Password -> navigasi ke ForgotPasswordScreen, kirim email jika ada
+              GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ForgotPasswordScreen(
+                        email: _emailController.text.trim(),
+                      ),
+                    ),
+                  );
+                },
+                child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                    color: Color(0xFF3BAA81),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
+
 
               // Sign Up
               Row(
@@ -340,7 +387,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const RegisterScreen()),
+                          builder: (_) => const RegisterScreen(),
+                        ),
                       );
                     },
                     child: const Text(
