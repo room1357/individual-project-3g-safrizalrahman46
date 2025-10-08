@@ -224,31 +224,58 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int selectedTab = 1;
+class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+  int selectedTab = 0;
+  int selectedBottomNav = 0;
   final svc = ExpenseService.instance;
+  late AnimationController _fabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _fabController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _fabController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FAFB),
+      backgroundColor: const Color(0xFFF7F7F7),
+      resizeToAvoidBottomInset: true,
 
       // === AppBar ===
       appBar: AppBar(
         elevation: 0,
-        backgroundColor: Colors.white,
-        centerTitle: true,
+        backgroundColor: Colors.transparent,
+        toolbarHeight: 70,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 16),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.black, size: 28),
+            onPressed: () {},
+          ),
+        ),
         title: const Text(
           'Dashboard',
           style: TextStyle(
-            color: Colors.black87,
+            color: Colors.black,
             fontWeight: FontWeight.w700,
-            fontSize: 18,
+            fontSize: 24,
           ),
         ),
+        centerTitle: false,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.only(right: 20),
             child: GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -256,10 +283,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   MaterialPageRoute(builder: (_) => const ProfileScreen()),
                 );
               },
-              child: const CircleAvatar(
-                radius: 18,
-                backgroundColor: Color(0xFF9AE6B4),
-                child: Icon(Icons.person, color: Colors.white),
+              child: Container(
+                width: 45,
+                height: 45,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF9AE6B4),
+                ),
+                child: const Icon(Icons.person, color: Colors.white, size: 26),
               ),
             ),
           ),
@@ -268,10 +299,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // === Body ===
       body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 16),
+
             // 🔹 Summary Cards
             Row(
               children: [
@@ -280,69 +313,107 @@ class _HomeScreenState extends State<HomeScreen> {
                     title: "Total Expense",
                     value: rp(svc.totalAll),
                     color: Colors.white,
-                    textColor: Colors.black87,
-                    icon: Icons.credit_card_outlined,
+                    textColor: Colors.black,
+                    icon: Icons.credit_card_rounded,
+                    iconBg: const Color(0xFFF5F5F5),
                   ),
                 ),
-                const SizedBox(width: 14),
+                const SizedBox(width: 16),
                 Expanded(
                   child: _summaryCard(
                     title: "Categories",
                     value: rp(svc.totalAll),
-                    color: const Color(0xFFD9FBE3),
-                    textColor: const Color(0xFF166534),
-                    icon: Icons.category_outlined,
+                    color: const Color(0xFF8EE5B5),
+                    textColor: Colors.white,
+                    icon: Icons.credit_card_rounded,
+                    iconBg: Colors.white.withOpacity(0.25),
                   ),
                 ),
               ],
             ),
 
-            const SizedBox(height: 28),
+            const SizedBox(height: 24),
 
             // 🔹 Tab Menu
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      _tabButton(0, "+ Categories"),
+                      const SizedBox(width: 10),
+                      _tabButton(1, "Statistic"),
+                      const SizedBox(width: 10),
+                      _tabButton(2, "Export"),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(3, (i) {
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: selectedTab == i ? 32 : 10,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: selectedTab == i
+                              ? const Color(0xFF22C55E)
+                              : const Color(0xFFDEDEDE),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 28),
+
+            // 🔹 Header Latest Expense
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _tabButton(0, "+ Categories"),
-                _tabButton(1, "Statistic"),
-                _tabButton(2, "Export"),
+                const Text(
+                  'latest Expense',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 18,
+                    color: Colors.black,
+                  ),
+                ),
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black, width: 1.5),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Icon(
+                    Icons.more_horiz,
+                    color: Colors.black,
+                    size: 22,
+                  ),
+                ),
               ],
             ),
+            const SizedBox(height: 18),
 
-            const SizedBox(height: 10),
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(3, (i) {
-                  return AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: selectedTab == i ? 30 : 10,
-                    height: 3,
-                    decoration: BoxDecoration(
-                      color: selectedTab == i
-                          ? const Color(0xFF22C55E)
-                          : const Color(0xFFDCFCE7),
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  );
-                }),
-              ),
-            ),
-
-            const SizedBox(height: 28),
-
-            const Text(
-              'Latest Expense',
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 16,
-                color: Colors.black87,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // 🔹 Dummy List
+            // 🔹 Expense List
             Column(
               children: List.generate(5, (index) {
                 return _expenseTile(
@@ -353,51 +424,72 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }),
             ),
+            const SizedBox(height: 100),
           ],
         ),
       ),
 
       // === Floating Button ===
-      floatingActionButton: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        decoration: const BoxDecoration(
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: Color(0x806EE7B7),
-              blurRadius: 25,
-              spreadRadius: 6,
-            ),
-          ],
+      floatingActionButton: ScaleTransition(
+        scale: CurvedAnimation(
+          parent: _fabController,
+          curve: Curves.elasticOut,
         ),
-        child: FloatingActionButton(
-          elevation: 4,
-          onPressed: () async {
-            final ok = await Navigator.pushNamed(context, '/add');
-            if (ok == true && context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Pengeluaran ditambahkan')),
-              );
-              setState(() {});
-            }
-          },
-          backgroundColor: const Color(0xFF22C55E),
-          child: const Icon(Icons.add, size: 36),
+        child: Container(
+          width: 64,
+          height: 64,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFF6EE7B7),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6EE7B7).withOpacity(0.4),
+                blurRadius: 20,
+                spreadRadius: 2,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(32),
+              onTap: () async {
+                _fabController.reverse().then((_) => _fabController.forward());
+                final ok = await Navigator.pushNamed(context, '/add');
+                if (ok == true && context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Pengeluaran ditambahkan'),
+                      behavior: SnackBarBehavior.floating,
+                      margin: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).size.height - 150,
+                        left: 20,
+                        right: 20,
+                      ),
+                    ),
+                  );
+                  setState(() {});
+                }
+              },
+              child: const Center(
+                child: Icon(Icons.add, size: 32, color: Colors.white),
+              ),
+            ),
+          ),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       // === Bottom Navigation Bar ===
-      bottomNavigationBar: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        decoration: const BoxDecoration(
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
           boxShadow: [
             BoxShadow(
-              color: Color(0x22000000),
-              blurRadius: 15,
-              offset: Offset(0, -2),
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
             ),
           ],
         ),
@@ -405,17 +497,17 @@ class _HomeScreenState extends State<HomeScreen> {
           elevation: 0,
           color: Colors.transparent,
           shape: const CircularNotchedRectangle(),
-          notchMargin: 10,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 10),
+          notchMargin: 8,
+          child: SizedBox(
+            height: 60,
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _bottomIcon(Icons.home_rounded, 0),
-                _bottomIcon(Icons.category_outlined, 1),
-                const SizedBox(width: 40),
-                _bottomIcon(Icons.bar_chart_rounded, 2),
-                _bottomIcon(Icons.settings_rounded, 3),
+                _bottomIcon(Icons.grid_view_rounded, 1),
+                const SizedBox(width: 60),
+                _bottomIcon(Icons.notifications_outlined, 2),
+                _bottomIcon(Icons.settings_outlined, 3),
               ],
             ),
           ),
@@ -431,42 +523,60 @@ class _HomeScreenState extends State<HomeScreen> {
     required Color color,
     required Color textColor,
     required IconData icon,
+    required Color iconBg,
   }) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      height: 170,
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.shade200,
-            blurRadius: 10,
-            spreadRadius: 2,
+            color: color == Colors.white
+                ? Colors.black.withOpacity(0.06)
+                : const Color(0xFF8EE5B5).withOpacity(0.3),
+            blurRadius: 15,
+            spreadRadius: 0,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icon, color: textColor, size: 26),
-          const SizedBox(height: 10),
-          Text(
-            title,
-            style: TextStyle(
-              color: textColor.withOpacity(0.8),
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: iconBg,
+              borderRadius: BorderRadius.circular(14),
             ),
+            child: Icon(icon, color: textColor, size: 26),
           ),
-          const SizedBox(height: 6),
-          Text(
-            value,
-            style: TextStyle(
-              color: textColor,
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  color: textColor.withOpacity(0.9),
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                value,
+                style: TextStyle(
+                  color: textColor,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 22,
+                  letterSpacing: -0.5,
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -476,38 +586,51 @@ class _HomeScreenState extends State<HomeScreen> {
   // === Tab Button ===
   Widget _tabButton(int index, String text) {
     final bool isActive = selectedTab == index;
-    return GestureDetector(
-      onTap: () async {
-        setState(() => selectedTab = index);
-        if (index == 0) {
-          Navigator.pushNamed(context, '/categories');
-        } else if (index == 1) {
-          Navigator.pushNamed(context, '/stats');
-        } else if (index == 2) {
-          await ExportPdf.exportAll(filename: 'expenses.pdf');
-          if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('PDF diekspor. Silakan simpan/print.')),
-          );
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFDCFCE7) : Colors.white,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: isActive ? const Color(0xFF22C55E) : const Color(0xFFE5E7EB),
-            width: 1,
+    return Expanded(
+      child: GestureDetector(
+        onTap: () async {
+          setState(() => selectedTab = index);
+          if (index == 0) {
+            Navigator.pushNamed(context, '/categories');
+          } else if (index == 1) {
+            Navigator.pushNamed(context, '/stats');
+          } else if (index == 2) {
+            await ExportPdf.exportAll(filename: 'expenses.pdf');
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Text('PDF diekspor. Silakan simpan/print.'),
+                behavior: SnackBarBehavior.floating,
+                margin: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).size.height - 150,
+                  left: 20,
+                  right: 20,
+                ),
+              ),
+            );
+          }
+        },
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isActive ? const Color(0xFF6EE7B7) : Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isActive ? const Color(0xFF6EE7B7) : const Color(0xFFE8E8E8),
+              width: 1,
+            ),
           ),
-        ),
-        child: Text(
-          text,
-          style: TextStyle(
-            color: isActive ? const Color(0xFF15803D) : Colors.black87,
-            fontWeight: FontWeight.w600,
-            fontSize: 13,
+          child: Center(
+            child: Text(
+              text,
+              style: TextStyle(
+                color: isActive ? Colors.white : Colors.black87,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+              ),
+            ),
           ),
         ),
       ),
@@ -521,42 +644,46 @@ class _HomeScreenState extends State<HomeScreen> {
     required String source,
     required String amount,
   }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 18),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(12),
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE8E8E8),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(
+              Icons.receipt_long_outlined,
+              color: Colors.grey.shade400,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                    color: Colors.black,
+                  ),
                 ),
-                child: const Icon(Icons.fastfood_outlined,
-                    color: Colors.grey, size: 24),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14,
-                    ),
+                const SizedBox(height: 3),
+                Text(
+                  date,
+                  style: TextStyle(
+                    color: Colors.grey.shade500,
+                    fontSize: 12,
                   ),
-                  Text(
-                    date,
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                ],
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
@@ -565,12 +692,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 amount,
                 style: const TextStyle(
                   fontWeight: FontWeight.w600,
-                  fontSize: 14,
+                  fontSize: 15,
+                  color: Colors.black,
                 ),
               ),
+              const SizedBox(height: 3),
               Text(
                 source,
-                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                style: TextStyle(
+                  color: Colors.grey.shade500,
+                  fontSize: 12,
+                ),
               ),
             ],
           ),
@@ -581,33 +713,52 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // === Bottom Bar Icon ===
   Widget _bottomIcon(IconData icon, int index) {
-    final isActive = selectedTab == index;
+    final isActive = selectedBottomNav == index;
     return GestureDetector(
       onTap: () {
-        setState(() => selectedTab = index);
+        setState(() => selectedBottomNav = index);
         if (index == 0) {
           Navigator.pushNamed(context, '/');
         } else if (index == 1) {
           Navigator.pushNamed(context, '/categories');
         } else if (index == 2) {
-          Navigator.pushNamed(context, '/stats');
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Notifications coming soon!'),
+              behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.height - 150,
+                left: 20,
+                right: 20,
+              ),
+            ),
+          );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Settings coming soon!')),
+            SnackBar(
+              content: const Text('Settings coming soon!'),
+              behavior: SnackBarBehavior.floating,
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).size.height - 150,
+                left: 20,
+                right: 20,
+              ),
+            ),
           );
         }
       },
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.all(6),
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFDCFCE7) : Colors.transparent,
+          color: isActive ? const Color(0xFF6EE7B7) : Colors.transparent,
           shape: BoxShape.circle,
         ),
         child: Icon(
           icon,
-          color: isActive ? const Color(0xFF22C55E) : Colors.grey.shade400,
-          size: isActive ? 28 : 26,
+          color: isActive ? Colors.white : Colors.grey.shade400,
+          size: 26,
         ),
       ),
     );
