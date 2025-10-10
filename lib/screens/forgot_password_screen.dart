@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import 'password_updated_screen.dart'; 
 
 class ForgotPasswordScreen extends StatefulWidget {
   final String email; // Email user yang mau direset
@@ -40,18 +41,20 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _message = null;
     });
 
-    final success = await AuthService.instance.resetPassword(widget.email, newPass);
+    final success =
+        await AuthService.instance.resetPassword(widget.email, newPass);
 
-    setState(() {
-      _loading = false;
-      _message = success
-          ? "Password successfully updated!"
-          : "Failed to reset password. Please try again.";
-    });
+    setState(() => _loading = false);
 
-    if (success) {
-      await Future.delayed(const Duration(seconds: 1));
-      if (mounted) Navigator.pop(context);
+    if (success && mounted) {
+      // ✅ langsung navigasi ke halaman sukses
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const PasswordUpdatedScreen()),
+      );
+    } else {
+      setState(() => _message =
+          "Failed to reset password. Please try again.");
     }
   }
 

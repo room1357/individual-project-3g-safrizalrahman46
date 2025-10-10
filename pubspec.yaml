@@ -32,6 +32,8 @@ flutter:
     - assets/images/
     - assets/icon/app_icon.png
     - assets/logo.png
+    - assets/images/password_updated.png
+
 
 
 flutter_launcher_icons:
