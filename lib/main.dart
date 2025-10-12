@@ -64,7 +64,9 @@
 //     );
 //   }
 // }
+
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 // Screens
 import 'screens/splash_screen.dart';
@@ -82,11 +84,25 @@ import 'services/auth_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load data user + data expense dari SharedPreferences
+  // 🔹 Tambahkan dummy user jika belum ada
+  await AuthService.instance.addDummyUsers();
+
+  // 🔹 Load data user + expense
   await AuthService.instance.loadCurrentUser();
   await ExpenseService.instance.loadInitialData();
 
-  runApp(const MyApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        // ✅ ExpenseService adalah ChangeNotifier
+        ChangeNotifierProvider(create: (_) => ExpenseService.instance),
+
+        // ✅ AuthService bukan ChangeNotifier → Provider biasa
+        Provider(create: (_) => AuthService.instance),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -94,18 +110,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+    final user = authService.currentUser;
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Expense Application',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
 
-      // 👇 SplashScreen jadi tampilan awal
-      home: const SplashScreen(),
+      // 👇 SplashScreen sebagai tampilan awal
+      home: user != null ? const HomeScreen() : const SplashScreen(),
 
-      // 👇 Semua route tetap ada
+      // 👇 Daftar route aplikasi
       routes: {
         '/home': (_) => const HomeScreen(),
         '/login': (_) => const LoginScreen(),
@@ -114,7 +133,7 @@ class MyApp extends StatelessWidget {
         '/categories': (_) => const CategoryScreen(),
       },
 
-      // 👇 Route dinamis untuk Edit
+      // 👇 Route dinamis untuk halaman edit
       onGenerateRoute: (settings) {
         if (settings.name == '/edit') {
           final id = settings.arguments as String;
@@ -127,3 +146,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

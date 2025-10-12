@@ -208,14 +208,14 @@
 //     );
 //   }
 // }
-
 import 'package:flutter/material.dart';
-import 'login_screen.dart';
-import 'expense_list_screen.dart';
-import 'profile_screen.dart';
+import 'package:provider/provider.dart';
 import '../services/expense_service.dart';
 import '../utils/currency_utils.dart';
 import '../utils/export_utils.dart';
+import '../models/expense.dart';
+import 'profile_screen.dart';
+import '../widgets/custom_bottom_nav.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -226,13 +226,14 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int selectedTab = 0;
-  int selectedBottomNav = 0;
-  final svc = ExpenseService.instance;
   late AnimationController _fabController;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ExpenseService.instance.loadInitialData();
+    });
     _fabController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
@@ -248,22 +249,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final svc = Provider.of<ExpenseService>(context);
+    final expenses = svc.expenses;
+    final categories = svc.categories;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
-      resizeToAvoidBottomInset: true,
 
       // === AppBar ===
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.transparent,
         toolbarHeight: 70,
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 16),
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back, color: Colors.black, size: 28),
-            onPressed: () {},
-          ),
-        ),
         title: const Text(
           'Dashboard',
           style: TextStyle(
@@ -272,7 +269,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             fontSize: 24,
           ),
         ),
-        centerTitle: false,
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 20),
@@ -322,10 +318,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 Expanded(
                   child: _summaryCard(
                     title: "Categories",
-                    value: rp(svc.totalAll),
+                    value: categories.length.toString(),
                     color: const Color(0xFF8EE5B5),
                     textColor: Colors.white,
-                    icon: Icons.credit_card_rounded,
+                    icon: Icons.category_outlined,
                     iconBg: Colors.white.withOpacity(0.25),
                   ),
                 ),
@@ -387,136 +383,89 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             // 🔹 Header Latest Expense
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  'latest Expense',
+              children: const [
+                Text(
+                  'Latest Expense',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 18,
                     color: Colors.black,
                   ),
                 ),
-                Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black, width: 1.5),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Icon(
-                    Icons.more_horiz,
-                    color: Colors.black,
-                    size: 22,
-                  ),
-                ),
+                Icon(Icons.more_horiz, color: Colors.black, size: 28),
               ],
             ),
             const SizedBox(height: 18),
 
             // 🔹 Expense List
-            Column(
-              children: List.generate(5, (index) {
-                return _expenseTile(
-                  title: 'Food',
-                  date: '20 Oktober 2025',
-                  source: 'GoFood',
-                  amount: '- 25.000',
-                );
-              }),
-            ),
+            if (expenses.isEmpty)
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 40),
+                  child: Column(
+                    children: const [
+                      Icon(Icons.hourglass_empty, size: 60, color: Colors.grey),
+                      SizedBox(height: 8),
+                      Text(
+                        'Belum ada pengeluaran',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              Column(
+                children: expenses.reversed
+                    .take(5)
+                    .map((e) => _expenseTile(
+                          title: e.category,
+                          date:
+                              "${e.date.day} ${_monthName(e.date.month)} ${e.date.year}",
+                          source: e.description ?? '',
+                          amount: "- ${rp(e.amount)}",
+                        ))
+                    .toList(),
+              ),
+
             const SizedBox(height: 100),
           ],
         ),
       ),
 
-      // === Floating Button ===
+      // === Floating Add Button ===
       floatingActionButton: ScaleTransition(
         scale: CurvedAnimation(
           parent: _fabController,
           curve: Curves.elasticOut,
         ),
-        child: Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFF6EE7B7),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF6EE7B7).withOpacity(0.4),
-                blurRadius: 20,
-                spreadRadius: 2,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(32),
-              onTap: () async {
-                _fabController.reverse().then((_) => _fabController.forward());
-                final ok = await Navigator.pushNamed(context, '/add');
-                if (ok == true && context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: const Text('Pengeluaran ditambahkan'),
-                      behavior: SnackBarBehavior.floating,
-                      margin: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).size.height - 150,
-                        left: 20,
-                        right: 20,
-                      ),
-                    ),
-                  );
-                  setState(() {});
-                }
-              },
-              child: const Center(
-                child: Icon(Icons.add, size: 32, color: Colors.white),
-              ),
-            ),
-          ),
+        child: FloatingActionButton(
+          backgroundColor: const Color(0xFF6EE7B7),
+          elevation: 8,
+          onPressed: () async {
+            _fabController.reverse().then((_) => _fabController.forward());
+            final ok = await Navigator.pushNamed(context, '/add');
+            if (ok == true && context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Pengeluaran ditambahkan'),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+              setState(() {});
+            }
+          },
+          child: const Icon(Icons.add, size: 32, color: Colors.white),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
-      // === Bottom Navigation Bar ===
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: BottomAppBar(
-          elevation: 0,
-          color: Colors.transparent,
-          shape: const CircularNotchedRectangle(),
-          notchMargin: 8,
-          child: SizedBox(
-            height: 60,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _bottomIcon(Icons.home_rounded, 0),
-                _bottomIcon(Icons.grid_view_rounded, 1),
-                const SizedBox(width: 60),
-                _bottomIcon(Icons.notifications_outlined, 2),
-                _bottomIcon(Icons.settings_outlined, 3),
-              ],
-            ),
-          ),
-        ),
-      ),
+      // ✅ Gunakan CustomBottomNav
+      bottomNavigationBar: const CustomBottomNav(currentIndex: 0),
     );
   }
 
-  // === Summary Card ===
+  // === Reusable Widgets ===
   Widget _summaryCard({
     required String title,
     required String value,
@@ -537,14 +486,13 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 ? Colors.black.withOpacity(0.06)
                 : const Color(0xFF8EE5B5).withOpacity(0.3),
             blurRadius: 15,
-            spreadRadius: 0,
             offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
             width: 50,
@@ -558,34 +506,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: textColor.withOpacity(0.9),
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
-                ),
-              ),
+              Text(title,
+                  style: TextStyle(
+                      color: textColor.withOpacity(0.9), fontSize: 13)),
               const SizedBox(height: 6),
-              Text(
-                value,
-                style: TextStyle(
-                  color: textColor,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 22,
-                  letterSpacing: -0.5,
-                ),
-              ),
+              Text(value,
+                  style: TextStyle(
+                      color: textColor,
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700)),
             ],
-          ),
+          )
         ],
       ),
     );
   }
 
-  // === Tab Button ===
   Widget _tabButton(int index, String text) {
-    final bool isActive = selectedTab == index;
+    final isActive = selectedTab == index;
     return Expanded(
       child: GestureDetector(
         onTap: () async {
@@ -598,15 +536,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             await ExportPdf.exportAll(filename: 'expenses.pdf');
             if (!context.mounted) return;
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('PDF diekspor. Silakan simpan/print.'),
-                behavior: SnackBarBehavior.floating,
-                margin: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).size.height - 150,
-                  left: 20,
-                  right: 20,
-                ),
-              ),
+              const SnackBar(content: Text('PDF berhasil diekspor!')),
             );
           }
         },
@@ -618,7 +548,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             color: isActive ? const Color(0xFF6EE7B7) : Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isActive ? const Color(0xFF6EE7B7) : const Color(0xFFE8E8E8),
+              color: isActive
+                  ? const Color(0xFF6EE7B7)
+                  : const Color(0xFFE8E8E8),
               width: 1,
             ),
           ),
@@ -637,7 +569,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // === Expense Item ===
   Widget _expenseTile({
     required String title,
     required String date,
@@ -655,55 +586,33 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               color: const Color(0xFFE8E8E8),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: Icon(
-              Icons.receipt_long_outlined,
-              color: Colors.grey.shade400,
-              size: 24,
-            ),
+            child: const Icon(Icons.receipt_long_outlined,
+                color: Colors.grey, size: 24),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: Colors.black,
-                  ),
-                ),
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600, fontSize: 15)),
                 const SizedBox(height: 3),
-                Text(
-                  date,
-                  style: TextStyle(
-                    color: Colors.grey.shade500,
-                    fontSize: 12,
-                  ),
-                ),
+                Text(date,
+                    style:
+                        TextStyle(color: Colors.grey.shade500, fontSize: 12)),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                amount,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 15,
-                  color: Colors.black,
-                ),
-              ),
+              Text(amount,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, fontSize: 15)),
               const SizedBox(height: 3),
-              Text(
-                source,
-                style: TextStyle(
-                  color: Colors.grey.shade500,
-                  fontSize: 12,
-                ),
-              ),
+              Text(source,
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
             ],
           ),
         ],
@@ -711,56 +620,21 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  // === Bottom Bar Icon ===
-  Widget _bottomIcon(IconData icon, int index) {
-    final isActive = selectedBottomNav == index;
-    return GestureDetector(
-      onTap: () {
-        setState(() => selectedBottomNav = index);
-        if (index == 0) {
-          Navigator.pushNamed(context, '/');
-        } else if (index == 1) {
-          Navigator.pushNamed(context, '/categories');
-        } else if (index == 2) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Notifications coming soon!'),
-              behavior: SnackBarBehavior.floating,
-              margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).size.height - 150,
-                left: 20,
-                right: 20,
-              ),
-            ),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: const Text('Settings coming soon!'),
-              behavior: SnackBarBehavior.floating,
-              margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).size.height - 150,
-                left: 20,
-                right: 20,
-              ),
-            ),
-          );
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF6EE7B7) : Colors.transparent,
-          shape: BoxShape.circle,
-        ),
-        child: Icon(
-          icon,
-          color: isActive ? Colors.white : Colors.grey.shade400,
-          size: 26,
-        ),
-      ),
-    );
+  String _monthName(int m) {
+    const months = [
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember'
+    ];
+    return months[m - 1];
   }
 }
