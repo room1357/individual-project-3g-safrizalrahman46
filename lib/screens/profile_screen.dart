@@ -1,4 +1,6 @@
 import 'dart:io' show File;
+import 'dart:typed_data';
+import 'dart:convert';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
@@ -14,7 +16,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   File? _profileImage;
-  String? _webImagePath;
+  Uint8List? _webImageBytes;
 
   @override
   void initState() {
@@ -26,7 +28,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Future<void> _loadCurrentUser() async {
     await AuthService.instance.loadCurrentUser();
     await _loadProfileImage();
-    setState(() {}); // perbarui tampilan
+    if (mounted) setState(() {}); // perbarui tampilan
   }
 
   /// 🖼️ Muat ulang foto profil berdasarkan platform
@@ -35,24 +37,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (user == null) return;
 
     if (kIsWeb) {
-      // Web pakai path string langsung
-      setState(() {
-        _webImagePath = user.profileImagePath?.isNotEmpty == true
-            ? user.profileImagePath
-            : null;
-      });
-    } else {
-      // Mobile pakai File
       if (user.profileImagePath != null &&
-          user.profileImagePath!.isNotEmpty) {
+          user.profileImagePath!.isNotEmpty &&
+          user.profileImagePath!.startsWith('data:image')) {
+        // Base64 decode
+        final base64Str = user.profileImagePath!.split(',').last;
+        _webImageBytes = base64Decode(base64Str);
+      } else {
+        _webImageBytes = null;
+      }
+    } else {
+      if (user.profileImagePath != null && user.profileImagePath!.isNotEmpty) {
         final file = File(user.profileImagePath!);
         if (file.existsSync()) {
-          setState(() => _profileImage = file);
+          _profileImage = file;
         } else {
-          setState(() => _profileImage = null);
+          _profileImage = null;
         }
       } else {
-        setState(() => _profileImage = null);
+        _profileImage = null;
       }
     }
   }
@@ -93,8 +96,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-
-      // 🔄 Pull-to-refresh untuk memuat ulang data
       body: RefreshIndicator(
         onRefresh: _loadCurrentUser,
         child: ListView(
@@ -109,12 +110,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 CircleAvatar(
                   radius: 55,
                   backgroundColor: Colors.green.shade200,
-                  backgroundImage: (!kIsWeb && _profileImage != null)
+                  backgroundImage: !kIsWeb && _profileImage != null
                       ? FileImage(_profileImage!)
-                      : (kIsWeb && _webImagePath != null)
-                          ? NetworkImage(_webImagePath!)
-                          : null,
-                  child: (_profileImage == null && _webImagePath == null)
+                      : (kIsWeb && _webImageBytes != null
+                          ? MemoryImage(_webImageBytes!) as ImageProvider
+                          : null),
+                  child: (_profileImage == null && _webImageBytes == null)
                       ? Text(
                           user.username.isNotEmpty
                               ? user.username[0].toUpperCase()
@@ -140,10 +141,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           builder: (context) => const ProfileEditScreen(),
                         ),
                       );
-
-                      // jika berhasil update, muat ulang data
                       if (result == true) {
                         await _loadCurrentUser();
+                        if (mounted) setState(() {});
                       }
                     },
                     child: Container(
@@ -195,7 +195,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   MaterialPageRoute(builder: (_) => const ProfileEditScreen()),
                 );
                 if (result == true) {
-                  await _loadCurrentUser(); // ✅ update foto & data
+                  await _loadCurrentUser();
+                  if (mounted) setState(() {});
                 }
               },
             ),
@@ -212,18 +213,106 @@ class _ProfileScreenState extends State<ProfileScreen> {
               color: const Color(0xFF6B4EFF),
             ),
             _divider(),
+
+            // 🔴 LOGOUT (with bottom sheet)
             _menuItem(
               icon: Icons.logout_rounded,
               label: "Logout",
               color: Colors.redAccent,
               onTap: () async {
-                await AuthService.instance.logout();
-                if (!context.mounted) return;
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginScreen()),
-                  (route) => false,
+                final shouldLogout = await showModalBottomSheet<bool>(
+                  context: context,
+                  backgroundColor: Colors.white,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (context) {
+                    return Padding(
+                      padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 4,
+                            margin: const EdgeInsets.only(bottom: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[300],
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                          const Text(
+                            "Logout?",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          const Text(
+                            "Are you sure do you wanna logout?",
+                            textAlign: TextAlign.center,
+                            style: TextStyle(color: Colors.grey, fontSize: 15),
+                          ),
+                          const SizedBox(height: 24),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextButton(
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.grey.shade100,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                  ),
+                                  onPressed: () => Navigator.pop(context, false),
+                                  child: const Text(
+                                    "No",
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: TextButton(
+                                  style: TextButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                  ),
+                                  onPressed: () => Navigator.pop(context, true),
+                                  child: const Text(
+                                    "Yes",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 );
+
+                if (shouldLogout == true) {
+                  await AuthService.instance.logout();
+                  if (!context.mounted) return;
+                  Navigator.pushAndRemoveUntil(
+                    context,
+                    MaterialPageRoute(builder: (_) => const LoginScreen()),
+                    (route) => false,
+                  );
+                }
               },
             ),
           ],
@@ -271,6 +360,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _divider() => Divider(color: Colors.grey.shade300, thickness: 1);
 }
+
 
 
 
