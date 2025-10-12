@@ -7,7 +7,11 @@ class ExpenseService extends ChangeNotifier {
   ExpenseService._();
   static final ExpenseService instance = ExpenseService._();
 
-  final StorageService _storage = InMemoryStorageService();
+  //catatan safrizal in fungsi data akan hilang sementara
+  // final StorageService _storage = InMemoryStorageService();
+
+  // jadi saya mengubah MENJADI SEPERTI INI agar datanya tidak hilang:
+  final StorageService _storage = StorageServiceManager.instance.storage;
 
   List<Expense> _expenses = [];
   List<CategoryModel> _categories = [];

@@ -29,7 +29,7 @@ class AuthService {
           id: 'user-001',
           username: 'budi',
           email: 'budi@gmail.com',
-          password: 'password123', // ingat, password masih plain text
+          password: 'password123',
           fullName: 'Budi Santoso',
         ),
         User(
@@ -46,13 +46,12 @@ class AuthService {
         'users',
         jsonEncode(dummyUsers.map((u) => u.toJson()).toList()),
       );
-       print('✅ Data user dummy berhasil disimpan.');
+      print('✅ Data user dummy berhasil disimpan.');
     } else {
       print('👍 Data users sudah ada, tidak perlu menanam data dummy.');
     }
   }
   // --- BATAS PENAMBAHAN FUNGSI BARU ---
-
 
   /// 🔹 Register user baru
   Future<bool> register(User user) async {
@@ -127,7 +126,7 @@ class AuthService {
     StorageServiceManager.instance.currentUserId = null;
   }
 
-  /// 🔹 Load current user saat startup
+  /// ✅ 🔹 Load current user saat startup (AKTIFKAN KEMBALI)
   Future<void> loadCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = prefs.getString('currentUser');
@@ -136,11 +135,19 @@ class AuthService {
 
       // Set juga ke storage
       StorageServiceManager.instance.currentUserId = _currentUser!.id;
+      print('👤 Current user loaded: ${_currentUser!.username}');
+    } else {
+      print('ℹ️ Belum ada user yang login.');
     }
   }
 
-  /// 🔹 Update profile
-  Future<void> updateProfile(String username, String fullName) async {
+  /// 🔹 Update profile (bisa update username, fullname, email, password)
+  Future<void> updateProfile(
+    String username,
+    String fullName, {
+    String? email,
+    String? password,
+  }) async {
     if (_currentUser == null) return;
 
     final prefs = await SharedPreferences.getInstance();
@@ -150,8 +157,8 @@ class AuthService {
       id: _currentUser!.id,
       username: username,
       fullName: fullName,
-      email: _currentUser!.email,
-      password: _currentUser!.password,
+      email: email ?? _currentUser!.email,
+      password: password ?? _currentUser!.password,
     );
 
     // Update list users
@@ -167,7 +174,7 @@ class AuthService {
       _users[index] = _currentUser!;
     }
 
-    // Simpan lagi ke SharedPreferences
+    // Simpan ke SharedPreferences
     await prefs.setString(
       'users',
       jsonEncode(_users.map((u) => u.toJson()).toList()),
@@ -175,7 +182,7 @@ class AuthService {
     await prefs.setString('currentUser', jsonEncode(_currentUser!.toJson()));
   }
 
-  /// ✅ 🔹 FUNGSI BARU: Forgot Password
+  /// 🔹 Forgot Password
   Future<bool> sendPasswordReset(String email) async {
     final prefs = await SharedPreferences.getInstance();
 
@@ -190,7 +197,6 @@ class AuthService {
     final user = users.where((u) => u.email == email).toList();
 
     if (user.isEmpty) {
-      // Email tidak ditemukan
       print('❌ Email not found: $email');
       return false;
     }
@@ -199,7 +205,6 @@ class AuthService {
     await Future.delayed(const Duration(seconds: 2));
     print('📩 Password reset link sent to $email');
 
-    // Kamu bisa tambahkan logika lain, seperti update token reset di future versi
     return true;
   }
 
@@ -241,6 +246,7 @@ class AuthService {
     return true;
   }
 }
+
 // import 'dart:convert';
 // import 'package:shared_preferences/shared_preferences.dart';
 // import '../models/user.dart';
