@@ -76,10 +76,12 @@ import 'screens/add_expense_screen.dart';
 import 'screens/edit_expense_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'screens/category_screen.dart';
+import 'screens/reminder_screen.dart';
 
 // Services
 import 'services/expense_service.dart';
 import 'services/auth_service.dart';
+import 'services/reminder_service.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -96,6 +98,9 @@ void main() async {
       providers: [
         // ✅ ExpenseService adalah ChangeNotifier
         ChangeNotifierProvider(create: (_) => ExpenseService.instance),
+
+         // ✅ ReminderService juga ChangeNotifier
+        ChangeNotifierProvider(create: (_) => ReminderService.instance),
 
         // ✅ AuthService bukan ChangeNotifier → Provider biasa
         Provider(create: (_) => AuthService.instance),
@@ -131,6 +136,7 @@ class MyApp extends StatelessWidget {
         '/add': (_) => const AddExpenseScreen(),
         '/stats': (_) => const StatisticsScreen(),
         '/categories': (_) => const CategoryScreen(),
+        '/reminder': (_) => const ReminderScreen()
       },
 
       // 👇 Route dinamis untuk halaman edit

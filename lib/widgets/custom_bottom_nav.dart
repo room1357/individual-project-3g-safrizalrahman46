@@ -6,6 +6,8 @@ import '../screens/profile_screen.dart';
 import '../screens/category_screen.dart';
 import '../screens/add_expense_screen.dart';
 import '../screens/settings_screen.dart';
+import '../screens/reminder_screen.dart';
+
 
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -36,7 +38,7 @@ class CustomBottomNav extends StatelessWidget {
       case 2:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const StatisticsScreen()),
+          MaterialPageRoute(builder: (_) => const ReminderScreen()),
         );
         break;
       case 3:
@@ -63,7 +65,7 @@ class CustomBottomNav extends StatelessWidget {
             _bottomIcon(context, Icons.home_rounded, 0, "Home"),
             _bottomIcon(context, Icons.category_rounded, 1, "Category"),
             const SizedBox(width: 60), // ruang untuk FAB di tengah
-            _bottomIcon(context, Icons.bar_chart_rounded, 2, "Stats"),
+            _bottomIcon(context, Icons.notification_add_outlined, 2, "Reminder"),
             _bottomIcon(context, Icons.settings_rounded, 3, "Settings"),
           ],
         ),
