@@ -93,6 +93,9 @@ void main() async {
   await AuthService.instance.loadCurrentUser();
   await ExpenseService.instance.loadInitialData();
 
+  await ReminderService.instance.loadReminders();
+
+
   runApp(
     MultiProvider(
       providers: [
