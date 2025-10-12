@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+// import 'package:pemrograman_mobile/screens/settings_screen.dart';
 import '../screens/home_screen.dart';
 import '../screens/statistics_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/category_screen.dart';
 import '../screens/add_expense_screen.dart';
+import '../screens/settings_screen.dart';
 
 class CustomBottomNav extends StatelessWidget {
   final int currentIndex;
@@ -40,7 +42,7 @@ class CustomBottomNav extends StatelessWidget {
       case 3:
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const ProfileScreen()),
+          MaterialPageRoute(builder: (_) => const SettingsScreen()),
         );
         break;
     }
