@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb; // ✅ Tambahkan ini
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/user.dart';
 import '../services/storage_service.dart';
+import 'dart:io';
 
 class AuthService {
   static final AuthService instance = AuthService._internal();
@@ -21,7 +23,7 @@ class AuthService {
     // Cek dulu apakah sudah ada data users
     final usersJson = prefs.getString('users');
     if (usersJson == null || usersJson.isEmpty || usersJson == '[]') {
-      print('🌱 Menanam data user dummy...'); // Pesan untuk debugging
+      print('🌱 Menanam data user dummy...');
 
       // Buat daftar user dummy
       final List<User> dummyUsers = [
@@ -31,6 +33,7 @@ class AuthService {
           email: 'budi@gmail.com',
           password: 'password123',
           fullName: 'Budi Santoso',
+          profileImagePath: '',
         ),
         User(
           id: 'user-002',
@@ -38,6 +41,7 @@ class AuthService {
           email: 'susi@gmail.com',
           password: 'password456',
           fullName: 'Susi Susanti',
+          profileImagePath: '',
         ),
       ];
 
@@ -57,7 +61,6 @@ class AuthService {
   Future<bool> register(User user) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Ambil data users lama
     final usersJson = prefs.getString('users');
     if (usersJson != null) {
       final decoded = jsonDecode(usersJson) as List;
@@ -65,25 +68,19 @@ class AuthService {
       _users.addAll(decoded.map((u) => User.fromJson(u)));
     }
 
-    // Cek apakah email sudah ada
     if (_users.any((u) => u.email == user.email)) return false;
 
-    // Tambah user baru
     _users.add(user);
 
-    // Simpan ke SharedPreferences
     await prefs.setString(
       'users',
       jsonEncode(_users.map((u) => u.toJson()).toList()),
     );
 
-    // Set sebagai currentUser
     _currentUser = user;
     await prefs.setString('currentUser', jsonEncode(user.toJson()));
 
-    // Integrasi ke StorageService
     StorageServiceManager.instance.currentUserId = user.id;
-
     return true;
   }
 
@@ -104,12 +101,8 @@ class AuthService {
       );
       _currentUser = user;
 
-      // Simpan current user ke SharedPreferences
       await prefs.setString('currentUser', jsonEncode(user.toJson()));
-
-      // Integrasi ke StorageService
       StorageServiceManager.instance.currentUserId = user.id;
-
       return true;
     } catch (e) {
       return false;
@@ -121,44 +114,60 @@ class AuthService {
     _currentUser = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('currentUser');
-
-    // Reset user id di storage
     StorageServiceManager.instance.currentUserId = null;
   }
 
-  /// ✅ 🔹 Load current user saat startup (AKTIFKAN KEMBALI)
+  /// ✅ 🔹 Load current user saat startup
   Future<void> loadCurrentUser() async {
     final prefs = await SharedPreferences.getInstance();
     final userJson = prefs.getString('currentUser');
-    if (userJson != null) {
-      _currentUser = User.fromJson(jsonDecode(userJson));
 
-      // Set juga ke storage
+    if (userJson != null && userJson.isNotEmpty) {
+      final userData = jsonDecode(userJson);
+      _currentUser = User.fromJson(userData);
+
+      // 🔹 Cek file hanya jika bukan Web
+      if (!kIsWeb &&
+          _currentUser!.profileImagePath != null &&
+          _currentUser!.profileImagePath!.isNotEmpty) {
+        final file = File(_currentUser!.profileImagePath!);
+        if (!file.existsSync()) {
+          print('⚠️ File foto hilang: ${_currentUser!.profileImagePath}');
+          _currentUser = _currentUser!.copyWith(profileImagePath: '');
+          await prefs.setString(
+              'currentUser', jsonEncode(_currentUser!.toJson()));
+        }
+      }
+
       StorageServiceManager.instance.currentUserId = _currentUser!.id;
+
       print('👤 Current user loaded: ${_currentUser!.username}');
+      print('🖼️ Profile image path: ${_currentUser!.profileImagePath}');
     } else {
       print('ℹ️ Belum ada user yang login.');
     }
   }
 
-  /// 🔹 Update profile (bisa update username, fullname, email, password)
+  /// 🔹 Update profile (termasuk foto profil)
   Future<void> updateProfile(
     String username,
     String fullName, {
     String? email,
     String? password,
+    String? profileImagePath,
   }) async {
     if (_currentUser == null) return;
 
     final prefs = await SharedPreferences.getInstance();
 
-    // Update current user
-    _currentUser = User(
-      id: _currentUser!.id,
+    // ✅ Gunakan copyWith agar field lain tetap aman
+    _currentUser = _currentUser!.copyWith(
       username: username,
       fullName: fullName,
-      email: email ?? _currentUser!.email,
-      password: password ?? _currentUser!.password,
+      email: email,
+      password: password,
+      profileImagePath:
+          profileImagePath ?? _currentUser!.profileImagePath, // pastikan tidak null
     );
 
     // Update list users
@@ -174,26 +183,29 @@ class AuthService {
       _users[index] = _currentUser!;
     }
 
-    // Simpan ke SharedPreferences
+    // 🔸 Simpan ulang semua data ke SharedPreferences
     await prefs.setString(
       'users',
       jsonEncode(_users.map((u) => u.toJson()).toList()),
     );
+
+    // 🔸 Simpan user aktif sekarang
     await prefs.setString('currentUser', jsonEncode(_currentUser!.toJson()));
+
+    print('✅ Profile updated for ${_currentUser!.username}');
+    print('🖼️ Saved image path: ${_currentUser!.profileImagePath}');
   }
 
   /// 🔹 Forgot Password
   Future<bool> sendPasswordReset(String email) async {
     final prefs = await SharedPreferences.getInstance();
 
-    // Ambil semua user
     final usersJson = prefs.getString('users');
     if (usersJson == null) return false;
 
     final decoded = jsonDecode(usersJson) as List;
     final users = decoded.map((u) => User.fromJson(u)).toList();
 
-    // Cari user berdasarkan email
     final user = users.where((u) => u.email == email).toList();
 
     if (user.isEmpty) {
@@ -201,10 +213,8 @@ class AuthService {
       return false;
     }
 
-    // Simulasi pengiriman email reset password
     await Future.delayed(const Duration(seconds: 2));
     print('📩 Password reset link sent to $email');
-
     return true;
   }
 
@@ -220,7 +230,6 @@ class AuthService {
     final index = users.indexWhere((u) => u.email == email);
     if (index == -1) return false;
 
-    // Update password
     final user = users[index];
     final updatedUser = User(
       id: user.id,
@@ -228,6 +237,7 @@ class AuthService {
       fullName: user.fullName,
       email: user.email,
       password: newPassword,
+      profileImagePath: user.profileImagePath,
     );
     users[index] = updatedUser;
 
@@ -236,7 +246,6 @@ class AuthService {
       jsonEncode(users.map((u) => u.toJson()).toList()),
     );
 
-    // Jika current user sama, update juga
     if (_currentUser?.email == email) {
       _currentUser = updatedUser;
       await prefs.setString('currentUser', jsonEncode(updatedUser.toJson()));
@@ -246,6 +255,8 @@ class AuthService {
     return true;
   }
 }
+
+
 
 // import 'dart:convert';
 // import 'package:shared_preferences/shared_preferences.dart';

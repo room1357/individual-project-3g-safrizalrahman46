@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/auth_service.dart';
@@ -21,19 +22,34 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
   File? _profileImage;
+  String? _webImagePath; // khusus Web
 
   @override
   void initState() {
     super.initState();
     final user = AuthService.instance.currentUser;
+
     _usernameController = TextEditingController(text: user?.username ?? '');
     _fullnameController = TextEditingController(text: user?.fullName ?? '');
     _emailController = TextEditingController(text: user?.email ?? '');
     _passwordController = TextEditingController(text: user?.password ?? '');
     _confirmPasswordController =
         TextEditingController(text: user?.password ?? '');
+
+    // Load foto profil jika ada
+    if (user?.profileImagePath != null) {
+      if (kIsWeb) {
+        _webImagePath = user!.profileImagePath!;
+      } else {
+        final file = File(user!.profileImagePath!);
+        if (file.existsSync()) {
+          _profileImage = file;
+        }
+      }
+    }
   }
 
+  /// 📸 Ambil gambar dari kamera atau galeri
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final source = await showModalBottomSheet<ImageSource>(
@@ -59,7 +75,13 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     if (source != null) {
       final pickedFile = await picker.pickImage(source: source);
       if (pickedFile != null) {
-        setState(() => _profileImage = File(pickedFile.path));
+        setState(() {
+          if (kIsWeb) {
+            _webImagePath = pickedFile.path;
+          } else {
+            _profileImage = File(pickedFile.path);
+          }
+        });
       }
     }
   }
@@ -72,7 +94,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
-          "Profile",
+          "Edit Profile",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
@@ -99,7 +121,7 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              // Avatar + Nama
+              // FOTO PROFIL
               Center(
                 child: Column(
                   children: [
@@ -108,11 +130,16 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       child: CircleAvatar(
                         radius: 50,
                         backgroundColor: Colors.green.shade200,
-                        backgroundImage:
-                            _profileImage != null ? FileImage(_profileImage!) : null,
-                        child: _profileImage == null
+                        backgroundImage: (!kIsWeb && _profileImage != null)
+                            ? FileImage(_profileImage!)
+                            : (kIsWeb && _webImagePath != null)
+                                ? NetworkImage(_webImagePath!) as ImageProvider
+                                : null,
+                        child: (_profileImage == null && _webImagePath == null)
                             ? Text(
-                                user.username[0].toUpperCase(),
+                                user.username.isNotEmpty
+                                    ? user.username[0].toUpperCase()
+                                    : "?",
                                 style: const TextStyle(
                                   fontSize: 40,
                                   fontWeight: FontWeight.bold,
@@ -123,42 +150,50 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const Text("Username", style: TextStyle(color: Colors.grey)),
-                    Text(
-                      user.fullName,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 18,
-                      ),
-                    ),
+                    const Text("Tap untuk ubah foto",
+                        style: TextStyle(color: Colors.grey)),
                   ],
                 ),
               ),
               const SizedBox(height: 30),
 
-              _buildField("Full Name", _fullnameController),
-              _buildField("Username", _usernameController),
-              _buildField("Email", _emailController),
+              // FORM INPUT
+              _buildField("Full Name", _fullnameController,
+                  validator: (val) =>
+                      val == null || val.isEmpty ? "Nama wajib diisi" : null),
+              _buildField("Username", _usernameController,
+                  validator: (val) => val == null || val.isEmpty
+                      ? "Username wajib diisi"
+                      : null),
+              _buildField("Email", _emailController,
+                  validator: (val) =>
+                      val == null || val.isEmpty ? "Email wajib diisi" : null),
               _buildField(
                 "Password",
                 _passwordController,
                 obscure: _obscurePassword,
-                toggleObscure: () {
-                  setState(() => _obscurePassword = !_obscurePassword);
-                },
+                toggleObscure: () =>
+                    setState(() => _obscurePassword = !_obscurePassword),
+                validator: (val) => val == null || val.isEmpty
+                    ? "Password wajib diisi"
+                    : (val.length < 6
+                        ? "Password minimal 6 karakter"
+                        : null),
               ),
               _buildField(
                 "Confirm Password",
                 _confirmPasswordController,
                 obscure: _obscureConfirmPassword,
-                toggleObscure: () {
-                  setState(() =>
-                      _obscureConfirmPassword = !_obscureConfirmPassword);
-                },
+                toggleObscure: () => setState(() =>
+                    _obscureConfirmPassword = !_obscureConfirmPassword),
+                validator: (val) => val != _passwordController.text
+                    ? "Konfirmasi password tidak cocok"
+                    : null,
               ),
 
               const SizedBox(height: 30),
 
+              // BUTTON SIMPAN
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -169,12 +204,15 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         _fullnameController.text.trim(),
                         email: _emailController.text.trim(),
                         password: _passwordController.text.trim(),
+                        profileImagePath:
+                            kIsWeb ? _webImagePath : _profileImage?.path,
                       );
 
                       if (!mounted) return;
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                            content: Text("Profile berhasil diperbarui")),
+                            content: Text("Profil berhasil diperbarui")),
                       );
 
                       Navigator.pop(context, true);
@@ -186,8 +224,10 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
                         borderRadius: BorderRadius.circular(12)),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
-                  child: const Text("Update",
-                      style: TextStyle(fontSize: 16, color: Colors.white)),
+                  child: const Text(
+                    "Simpan Perubahan",
+                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  ),
                 ),
               ),
             ],
@@ -197,24 +237,29 @@ class _ProfileEditScreenState extends State<ProfileEditScreen> {
     );
   }
 
+  /// Widget reusable untuk text field
   Widget _buildField(
     String label,
     TextEditingController controller, {
     bool obscure = false,
     VoidCallback? toggleObscure,
+    String? Function(String?)? validator,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: controller,
         obscureText: obscure,
+        validator: validator,
         decoration: InputDecoration(
           labelText: label,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           suffixIcon: toggleObscure != null
               ? IconButton(
                   icon: Icon(
-                    obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    obscure
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
                   ),
                   onPressed: toggleObscure,
                 )

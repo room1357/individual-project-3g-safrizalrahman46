@@ -1,3 +1,5 @@
+import 'dart:io' show File;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../screens/login_screen.dart';
@@ -11,9 +13,60 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  File? _profileImage;
+  String? _webImagePath;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentUser(); // 🔁 Load user + foto profil
+  }
+
+  /// 🔁 Muat ulang data user dan foto profil
+  Future<void> _loadCurrentUser() async {
+    await AuthService.instance.loadCurrentUser();
+    await _loadProfileImage();
+    setState(() {}); // perbarui tampilan
+  }
+
+  /// 🖼️ Muat ulang foto profil berdasarkan platform
+  Future<void> _loadProfileImage() async {
+    final user = AuthService.instance.currentUser;
+    if (user == null) return;
+
+    if (kIsWeb) {
+      // Web pakai path string langsung
+      setState(() {
+        _webImagePath = user.profileImagePath?.isNotEmpty == true
+            ? user.profileImagePath
+            : null;
+      });
+    } else {
+      // Mobile pakai File
+      if (user.profileImagePath != null &&
+          user.profileImagePath!.isNotEmpty) {
+        final file = File(user.profileImagePath!);
+        if (file.existsSync()) {
+          setState(() => _profileImage = file);
+        } else {
+          setState(() => _profileImage = null);
+        }
+      } else {
+        setState(() => _profileImage = null);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = AuthService.instance.currentUser;
+
+    if (user == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Profile")),
+        body: const Center(child: Text("Belum ada user yang login.")),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -40,41 +93,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
+
+      // 🔄 Pull-to-refresh untuk memuat ulang data
+      body: RefreshIndicator(
+        onRefresh: _loadCurrentUser,
+        child: ListView(
+          padding: const EdgeInsets.all(24),
           children: [
             const SizedBox(height: 10),
+
+            // 🖼️ FOTO PROFIL
             Stack(
               alignment: Alignment.center,
               children: [
                 CircleAvatar(
-                  radius: 50,
+                  radius: 55,
                   backgroundColor: Colors.green.shade200,
-                  child: Text(
-                    user?.username[0].toUpperCase() ?? "?",
-                    style: const TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
+                  backgroundImage: (!kIsWeb && _profileImage != null)
+                      ? FileImage(_profileImage!)
+                      : (kIsWeb && _webImagePath != null)
+                          ? NetworkImage(_webImagePath!)
+                          : null,
+                  child: (_profileImage == null && _webImagePath == null)
+                      ? Text(
+                          user.username.isNotEmpty
+                              ? user.username[0].toUpperCase()
+                              : "?",
+                          style: const TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        )
+                      : null,
                 ),
+
+                // ✏️ Tombol Edit
                 Positioned(
                   right: 0,
                   bottom: 0,
                   child: GestureDetector(
                     onTap: () async {
-                      final updated = await Navigator.push(
+                      final result = await Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const ProfileEditScreen(),
+                          builder: (context) => const ProfileEditScreen(),
                         ),
                       );
-                      if (updated == true) {
-                        setState(
-                          () {},
-                        ); // Refresh data jika user update profile
+
+                      // jika berhasil update, muat ulang data
+                      if (result == true) {
+                        await _loadCurrentUser();
                       }
                     },
                     child: Container(
@@ -95,47 +164,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 20),
+            const Text("Full Name", style: TextStyle(color: Colors.grey)),
+            Text(
+              user.fullName,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+            ),
+            const SizedBox(height: 16),
             const Text("Username", style: TextStyle(color: Colors.grey)),
             Text(
-              user?.fullName ?? "User",
+              user.username,
+              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+            ),
+            const SizedBox(height: 16),
+            const Text("Email", style: TextStyle(color: Colors.grey)),
+            Text(
+              user.email,
               style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
             ),
             const SizedBox(height: 30),
 
-            // Menu items
+            // 📋 MENU ITEMS
             _menuItem(
-              context,
               icon: Icons.person_rounded,
               label: "Account",
               color: const Color(0xFF6B4EFF),
               onTap: () async {
-                final updated = await Navigator.push(
+                final result = await Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const ProfileEditScreen()),
                 );
-                if (updated == true) {
-                  setState(() {}); // Refresh otomatis setelah update
+                if (result == true) {
+                  await _loadCurrentUser(); // ✅ update foto & data
                 }
               },
             ),
             _divider(),
             _menuItem(
-              context,
               icon: Icons.settings_rounded,
               label: "Settings",
               color: const Color(0xFF6B4EFF),
             ),
             _divider(),
             _menuItem(
-              context,
               icon: Icons.file_upload_rounded,
               label: "Export Data",
               color: const Color(0xFF6B4EFF),
             ),
             _divider(),
             _menuItem(
-              context,
               icon: Icons.logout_rounded,
               label: "Logout",
               color: Colors.redAccent,
@@ -155,8 +232,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _menuItem(
-    BuildContext context, {
+  Widget _menuItem({
     required IconData icon,
     required String label,
     required Color color,
@@ -195,6 +271,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _divider() => Divider(color: Colors.grey.shade300, thickness: 1);
 }
+
+
 
 // import 'package:flutter/material.dart';
 // import '../services/auth_service.dart';
