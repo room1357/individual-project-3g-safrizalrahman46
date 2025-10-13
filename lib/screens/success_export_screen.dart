@@ -7,59 +7,90 @@ class SuccessExportScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(
-                Icons.check_circle_rounded,
-                color: Color(0xFF34C759),
-                size: 120,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Export Berhasil!',
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Data kamu berhasil diexport ke file yang kamu pilih.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: Colors.black54,
-                ),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Tombol back di pojok kiri atas
+            Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.black, size: 24),
                 onPressed: () => Navigator.pop(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6EE19E),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 40,
-                    vertical: 14,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+              ),
+            ),
+
+            // Konten utama di tengah
+            Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/succes_export.png',
+                      width: 180,
+                      fit: BoxFit.contain,
+                    ),
+                    const SizedBox(height: 24),
+                    const Text(
+                      'Success',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text(
+                      'You Has Success Export The Data',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
                 ),
-                child: const Text(
-                  'Kembali',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
+              ),
+            ),
+
+            // Tombol di bawah
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 24),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(25),
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6EE19E), Color(0xFF2CB67D)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(25),
+                      ),
+                    ),
+                    child: const Text(
+                      'Back To  Dashboard',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
