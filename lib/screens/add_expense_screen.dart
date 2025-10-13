@@ -38,44 +38,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   }
 
   // ✅ UNIVERSAL DATE PICKER (Android, iOS, Web)
-Future<void> _pickDate() async {
-  if (kIsWeb) {
-    // 🌐 Langsung pakai dialog manual di web
-    DateTime tempDate = _date;
-    await showDialog(
-      context: context,
-      builder: (_) {
-        return AlertDialog(
-          title: const Text("Select Date"),
-          content: SizedBox(
-            height: 300,
-            width: 300,
-            child: CalendarDatePicker(
-              initialDate: _date,
-              firstDate: DateTime(2020),
-              lastDate: DateTime(2100),
-              onDateChanged: (picked) {
-                tempDate = picked;
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() => _date = tempDate);
-                Navigator.pop(context);
-              },
-              child: const Text("Select"),
-            ),
-          ],
-        );
-      },
-    );
-  } else {
+  Future<void> _pickDate() async {
     // 📱 Android/iOS pakai date picker biasa
     final picked = await showDatePicker(
       context: context,
@@ -88,7 +51,6 @@ Future<void> _pickDate() async {
       setState(() => _date = picked);
     }
   }
-}
 
   void _save() {
     if (!_formKey.currentState!.validate()) return;
@@ -121,7 +83,8 @@ Future<void> _pickDate() async {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
+          icon:
+              const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -151,12 +114,10 @@ Future<void> _pickDate() async {
               _inputBox(
                 controller: _titleC,
                 hint: "Name",
-                validator: (v) => (v == null || v.trim().isEmpty)
-                    ? 'Judul wajib diisi'
-                    : null,
+                validator: (v) =>
+                    (v == null || v.trim().isEmpty) ? 'Judul wajib diisi' : null,
               ),
               const SizedBox(height: 20),
-
               _buildLabel("Type"),
               Row(
                 children: [
@@ -182,17 +143,19 @@ Future<void> _pickDate() async {
               ),
               const SizedBox(height: 20),
 
+              // --- BAGIAN YANG DIPERBAIKI ---
               _buildLabel("Date"),
-              InkWell(
+              _inputBox(
+                // Hapus InkWell dan gunakan onTap langsung dari TextFormField
                 onTap: _pickDate,
-                child: _inputBox(
-                  readOnly: true,
-                  hint: formatYmd(_date),
-                  suffix: const Icon(Icons.calendar_today, size: 18),
-                ),
+                readOnly: true,
+                // Gunakan controller agar teks terlihat, bukan sebagai hint
+                controller: TextEditingController(text: formatYmd(_date)),
+                suffix: const Icon(Icons.calendar_today, size: 18),
               ),
-              const SizedBox(height: 20),
+              // --- BATAS PERBAIKAN ---
 
+              const SizedBox(height: 20),
               _buildLabel("Amount"),
               Row(
                 children: [
@@ -236,7 +199,6 @@ Future<void> _pickDate() async {
                 ],
               ),
               const SizedBox(height: 20),
-
               _buildLabel("Category"),
               DropdownButtonFormField<String>(
                 value: _catId,
@@ -253,7 +215,6 @@ Future<void> _pickDate() async {
                 validator: (v) => v == null ? 'Pilih kategori' : null,
               ),
               const SizedBox(height: 20),
-
               _buildLabel("Description (Optional)"),
               _inputBox(
                 controller: _descC,
@@ -261,7 +222,6 @@ Future<void> _pickDate() async {
                 maxLines: 3,
               ),
               const SizedBox(height: 20),
-
               OutlinedButton.icon(
                 onPressed: () {},
                 icon: const Icon(Icons.attach_file_rounded, color: Colors.grey),
@@ -278,7 +238,6 @@ Future<void> _pickDate() async {
                 ),
               ),
               const SizedBox(height: 30),
-
               Container(
                 width: double.infinity,
                 decoration: BoxDecoration(
@@ -316,16 +275,20 @@ Future<void> _pickDate() async {
   }
 
   Widget _buildLabel(String text) {
-    return Text(
-      text,
-      style: const TextStyle(
-        fontSize: 15,
-        fontWeight: FontWeight.w500,
-        color: Colors.black87,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        text,
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+        ),
       ),
     );
   }
 
+  // --- FUNGSI YANG DIPERBAIKI ---
   Widget _inputBox({
     TextEditingController? controller,
     String? hint,
@@ -335,6 +298,7 @@ Future<void> _pickDate() async {
     Widget? suffix,
     int maxLines = 1,
     BorderRadius? borderRadius,
+    VoidCallback? onTap, // Tambahkan parameter onTap
   }) {
     return TextFormField(
       controller: controller,
@@ -342,6 +306,7 @@ Future<void> _pickDate() async {
       readOnly: readOnly,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      onTap: onTap, // Gunakan parameter onTap di sini
       decoration: _inputDecoration(
         hint: hint,
         suffix: suffix,
@@ -349,6 +314,7 @@ Future<void> _pickDate() async {
       ),
     );
   }
+  // --- BATAS PERBAIKAN ---
 
   InputDecoration _inputDecoration({
     String? hint,
@@ -369,6 +335,14 @@ Future<void> _pickDate() async {
       focusedBorder: OutlineInputBorder(
         borderRadius: borderRadius ?? BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFF6EE7B7), width: 2),
+      ),
+      errorBorder: OutlineInputBorder( // Tambahkan ini untuk konsistensi
+        borderRadius: borderRadius ?? BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 1),
+      ),
+      focusedErrorBorder: OutlineInputBorder( // Tambahkan ini untuk konsistensi
+        borderRadius: borderRadius ?? BorderRadius.circular(12),
+        borderSide: const BorderSide(color: Colors.red, width: 2),
       ),
     );
   }
