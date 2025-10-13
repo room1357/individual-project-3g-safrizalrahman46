@@ -348,7 +348,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                 children: [
                   Row(
                     children: [
-                      _tabButton(0, "+ Categories"),
+                      _tabButton(0, "Categories"),
                       const SizedBox(width: 10),
                       _tabButton(1, "Statistic"),
                       const SizedBox(width: 10),
