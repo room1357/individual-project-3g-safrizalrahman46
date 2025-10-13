@@ -57,19 +57,34 @@ class _ReminderScreenState extends State<ReminderScreen> {
                 )
               ],
             ),
-            floatingActionButton: FloatingActionButton(
-              backgroundColor: Colors.green,
-              onPressed: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const AddReminderScreen()),
-                );
-                await ReminderService.instance.loadReminders();
-                setState(() {});
-              },
-              child: const Icon(Icons.add, size: 36),
+
+            // ✅ Tombol Plus dengan warna yang sama seperti onboarding
+            floatingActionButton: Container(
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF4ADE80).withOpacity(0.5), // efek glow
+                    blurRadius: 20,
+                    spreadRadius: 4,
+                  ),
+                ],
+              ),
+              child: FloatingActionButton(
+                backgroundColor: const Color(0xFF4ADE80), // warna dari onboarding
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const AddReminderScreen()),
+                  );
+                  await ReminderService.instance.loadReminders();
+                  setState(() {});
+                },
+                child: const Icon(Icons.add, size: 36),
+              ),
             ),
+
             body: reminders.isEmpty
                 ? const Center(
                     child: Text(
@@ -95,7 +110,6 @@ class _ReminderScreenState extends State<ReminderScreen> {
     );
   }
 
-  // Tampilan kartu data asli tetap seperti desain
   Widget _buildReminderCard(Reminder r) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
