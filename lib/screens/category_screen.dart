@@ -8,15 +8,29 @@ class CategoryScreen extends StatefulWidget {
   State<CategoryScreen> createState() => _CategoryScreenState();
 }
 
-class _CategoryScreenState extends State<CategoryScreen> {
+class _CategoryScreenState extends State<CategoryScreen>
+    with SingleTickerProviderStateMixin {
   final _addC = TextEditingController();
   final _renameC = TextEditingController();
   String? _selectedId;
+
+  bool _isPressed = false;
+  late AnimationController _gradientController;
+
+  @override
+  void initState() {
+    super.initState();
+    _gradientController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+  }
 
   @override
   void dispose() {
     _addC.dispose();
     _renameC.dispose();
+    _gradientController.dispose();
     super.dispose();
   }
 
@@ -195,45 +209,71 @@ class _CategoryScreenState extends State<CategoryScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
+
+            // 🟩 Tombol Shimmer & Animasi dari Onboarding
             GestureDetector(
-              onTap: () {
-                final ok = svc.addCategory(_addC.text);
-                if (!ok) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Nama tidak valid / sudah ada'),
-                    ),
-                  );
-                } else {
-                  _addC.clear();
-                  setState(() {});
-                }
+              onTapDown: (_) => setState(() => _isPressed = true),
+              onTapUp: (_) {
+                setState(() => _isPressed = false);
+                Future.delayed(const Duration(milliseconds: 120), () {
+                  final ok = svc.addCategory(_addC.text);
+                  if (!ok) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Nama tidak valid / sudah ada')),
+                    );
+                  } else {
+                    _addC.clear();
+                    setState(() {});
+                  }
+                });
               },
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF56AB2F), Color(0xFFA8E063)],
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                ),
-                child: const Center(
-                  child: Text(
-                    'Add Category',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
-                  ),
+              onTapCancel: () => setState(() => _isPressed = false),
+              child: AnimatedScale(
+                duration: const Duration(milliseconds: 150),
+                scale: _isPressed ? 0.94 : 1.0,
+                curve: Curves.easeOut,
+                child: AnimatedBuilder(
+                  animation: _gradientController,
+                  builder: (context, _) {
+                    final shimmerValue = (0.5 + 0.5 * _gradientController.value);
+                    return Container(
+                      width: double.infinity,
+                      height: 55,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color.lerp(const Color(0xFF6EE7B7), const Color(0xFF3BAA81), shimmerValue)!,
+                            Color.lerp(const Color(0xFF3BAA81), const Color(0xFF6EE7B7), shimmerValue)!,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(30),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.green.withOpacity(_isPressed ? 0.15 : 0.25),
+                            offset: const Offset(0, 8),
+                            blurRadius: _isPressed ? 8 : 18,
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Add Category',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
           ],
         ),
       ),
