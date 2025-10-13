@@ -22,7 +22,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ Hanya load kategori dari ExpenseService
     ExpenseService.instance.loadInitialData();
   }
 
@@ -41,7 +40,6 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
     }
   }
 
-  // ✅ Dijadikan async agar penyimpanan menunggu selesai
   Future<void> _saveReminder() async {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDate == null) {
@@ -60,13 +58,9 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
       description: _descController.text,
     );
 
-    // ✅ Simpan reminder ke SharedPreferences
     await ReminderService.instance.addReminder(reminder);
 
-    // ✅ Tutup halaman setelah tersimpan
-    if (mounted) {
-      Navigator.pop(context);
-    }
+    if (mounted) Navigator.pop(context);
   }
 
   @override
@@ -77,91 +71,89 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
         : DateFormat('dd/MM/yy').format(_selectedDate!);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9FFF7),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(
           'Add Reminder',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
         ),
         centerTitle: true,
         backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: CircleAvatar(
+              radius: 16,
+              backgroundColor: Color(0xFFBFEACF),
+              child: Icon(Icons.person, color: Colors.black54, size: 18),
+            ),
+          ),
+        ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              // Name
+              const SizedBox(height: 8),
               const Text('Name'),
               const SizedBox(height: 6),
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  hintText: 'Name',
-                  filled: true,
-                  fillColor: const Color(0xFFF4F8FF),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                validator: (v) =>
-                    v == null || v.isEmpty ? 'Name is required' : null,
-              ),
-              const SizedBox(height: 16),
+              _buildTextField(_nameController, 'Name', validator: true),
 
-              // Date
+              const SizedBox(height: 16),
               const Text('Date'),
               const SizedBox(height: 6),
               GestureDetector(
                 onTap: _pickDate,
                 child: AbsorbPointer(
-                  child: TextFormField(
-                    decoration: InputDecoration(
-                      hintText: 'DD/MM/YY',
-                      filled: true,
-                      fillColor: const Color(0xFFF4F8FF),
-                      suffixIcon: const Icon(Icons.calendar_today_outlined),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    controller: TextEditingController(text: dateText),
+                  child: _buildTextField(
+                    TextEditingController(text: dateText),
+                    'DD/MM/YY',
+                    icon: Icons.calendar_today_outlined,
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
 
-              // Amount
+              const SizedBox(height: 16),
               const Text('Amount'),
               const SizedBox(height: 6),
               Row(
                 children: [
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFDFF1FF),
-                      borderRadius: const BorderRadius.only(
+                    width: 70,
+                    height: 48,
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFDFF1FF),
+                      borderRadius: BorderRadius.only(
                         topLeft: Radius.circular(8),
                         bottomLeft: Radius.circular(8),
                       ),
                     ),
-                    child: const Text('IDR',
-                        style: TextStyle(fontWeight: FontWeight.w500)),
+                    alignment: Alignment.center,
+                    child: const Text(
+                      'IDR',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                   ),
                   Expanded(
                     child: TextFormField(
                       controller: _amountController,
                       keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         filled: true,
-                        fillColor: const Color(0xFFF4F8FF),
-                        border: const OutlineInputBorder(
+                        fillColor: Color(0xFFF4F8FF),
+                        contentPadding:
+                            EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.only(
                             topRight: Radius.circular(8),
                             bottomRight: Radius.circular(8),
@@ -173,82 +165,72 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
 
-              // Category
+              const SizedBox(height: 16),
               const Text('Category'),
               const SizedBox(height: 6),
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xFFF4F8FF),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+                decoration: _inputDecoration(),
                 items: categories
-                    .map((c) => DropdownMenuItem(
-                          value: c.name,
-                          child: Text(c.name),
-                        ))
+                    .map((c) =>
+                        DropdownMenuItem(value: c.name, child: Text(c.name)))
                     .toList(),
                 onChanged: (v) => setState(() => _selectedCategory = v),
               ),
-              const SizedBox(height: 16),
 
-              // Description
+              const SizedBox(height: 16),
               const Text('Description (Optional)'),
               const SizedBox(height: 6),
               TextField(
                 controller: _descController,
                 maxLines: 2,
-                decoration: InputDecoration(
-                  hintText: 'Description (Optional)',
-                  filled: true,
-                  fillColor: const Color(0xFFF4F8FF),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+                decoration: _inputDecoration(
+                    hint: 'Description (Optional)', filled: true),
               ),
+
               const SizedBox(height: 16),
-
               // Add Attachment
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: const Icon(Icons.attach_file_outlined, size: 18),
-                label: const Text('Add Attachment'),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.grey[700],
-                  side: BorderSide(color: Colors.grey[400]!),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+              Container(
+                width: double.infinity,
+                height: 48,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: Colors.grey.shade400,
+                    style: BorderStyle.solid,
+                  ),
+                ),
+                child: TextButton.icon(
+                  onPressed: () {},
+                  icon: const Icon(Icons.attach_file_outlined, size: 18),
+                  label: const Text(
+                    'Add Attachment',
+                    style: TextStyle(color: Colors.grey),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
 
-              // Set Reminder button
+              const SizedBox(height: 24),
+              // Add Reminder Button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _saveReminder,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor: const Color(0xFF6EE19E),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(12),
                     ),
                   ),
                   child: const Text(
-                    'Set Reminder',
+                    'Add Reminder',
                     style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),
@@ -256,6 +238,41 @@ class _AddReminderScreenState extends State<AddReminderScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  InputDecoration _inputDecoration({String? hint, bool filled = true}) {
+    return InputDecoration(
+      hintText: hint,
+      filled: filled,
+      fillColor: const Color(0xFFF4F8FF),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: BorderSide.none,
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hint,
+      {bool validator = false, IconData? icon}) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        hintText: hint,
+        filled: true,
+        fillColor: const Color(0xFFF4F8FF),
+        suffixIcon: icon != null ? Icon(icon) : null,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide.none,
+        ),
+      ),
+      validator: validator
+          ? (v) => v == null || v.isEmpty ? '$hint is required' : null
+          : null,
     );
   }
 }
