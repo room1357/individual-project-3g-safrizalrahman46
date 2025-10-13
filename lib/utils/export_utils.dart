@@ -3,7 +3,10 @@ import 'dart:typed_data';
 import 'dart:convert';
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' as html; // untuk Flutter Web
+// import 'dart:html' as html; // untuk Flutter Web
+
+import 'html_stub.dart' if (dart.library.html) 'dart:html' as html;
+
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart' as pdf;
 import 'package:printing/printing.dart';
