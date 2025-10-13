@@ -1,9 +1,15 @@
 // lib/utils/export_utils.dart
 import 'dart:typed_data';
+import 'dart:convert';
+import 'dart:io' as io;
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:html' as html; // untuk Flutter Web
 import 'package:pdf/widgets.dart' as pw;
 import 'package:pdf/pdf.dart' as pdf;
 import 'package:printing/printing.dart';
-
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path/path.dart' as path;
 
 import '../models/expense.dart';
 import '../services/expense_service.dart';
@@ -21,7 +27,6 @@ class ExportPdf {
     String filename = 'expenses.pdf',
   }) async {
     final bytes = await _buildPdfBytes(list);
-    // Tidak ada ?? karena 'filename' sudah non-nullable
     await Printing.layoutPdf(
       onLayout: (_) async => bytes,
       name: filename,
@@ -29,10 +34,8 @@ class ExportPdf {
   }
 
   // =================== Builder PDF ===================
-
   static Future<Uint8List> _buildPdfBytes(List<Expense> list) async {
     final doc = pw.Document();
-
     final total = list.fold<double>(0.0, (s, e) => s + e.amount);
 
     // ringkasan per kategori
@@ -126,7 +129,6 @@ class ExportPdf {
   }
 
   // =================== Widgets bantu PDF ===================
-
   static pw.Widget _chip(String text) => pw.Container(
         decoration: pw.BoxDecoration(
           color: pdf.PdfColors.white,
@@ -150,7 +152,6 @@ class ExportPdf {
       ];
     }).toList();
 
-    // GANTI: Table.fromTextArray -> TableHelper.fromTextArray
     return pw.TableHelper.fromTextArray(
       headers: headers,
       data: data,
@@ -167,11 +168,11 @@ class ExportPdf {
       headerHeight: 24,
       cellHeight: 22,
       columnWidths: const {
-        0: pw.FlexColumnWidth(2.3), // Title
-        1: pw.FlexColumnWidth(1.2), // Amount
-        2: pw.FlexColumnWidth(1.3), // Category
-        3: pw.FlexColumnWidth(1.1), // Date
-        4: pw.FlexColumnWidth(2.5), // Description
+        0: pw.FlexColumnWidth(2.3),
+        1: pw.FlexColumnWidth(1.2),
+        2: pw.FlexColumnWidth(1.3),
+        3: pw.FlexColumnWidth(1.1),
+        4: pw.FlexColumnWidth(2.5),
       },
       rowDecoration: const pw.BoxDecoration(color: pdf.PdfColors.white),
       oddRowDecoration:
@@ -180,12 +181,90 @@ class ExportPdf {
   }
 
   // =================== Formatter ===================
-
   static String _rp(double v) => 'Rp ${v.toStringAsFixed(0)}';
+  static String _formatDate(DateTime d) =>
+      '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+  static String _formatDateTime(DateTime d) =>
+      '${_formatDate(d)} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+}
+
+// ====================================================================
+// ====================== FITUR TAMBAHAN: EXPORT CSV ===================
+// ====================================================================
+
+class ExportCsv {
+  /// Export SEMUA data expense → CSV file
+  static Future<void> exportAll({String filename = 'expenses.csv'}) async {
+    final list = ExpenseService.instance.expenses;
+    await exportFromList(list, filename: filename);
+  }
+
+  /// Export dari LIST tertentu → CSV file
+  static Future<void> exportFromList(
+    List<Expense> list, {
+    String filename = 'expenses.csv',
+  }) async {
+    final csvString = _buildCsv(list);
+    final csvBytes = utf8.encode(csvString);
+
+    if (kIsWeb) {
+      // 🧭 WEB: langsung download ke browser
+      final blob = html.Blob([csvBytes], 'text/csv');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute('download', filename)
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    } else {
+      // 📱 ANDROID/iOS/DESKTOP: simpan ke dokumen app
+      final dir = await getApplicationDocumentsDirectory();
+      final filePath = path.join(dir.path, filename);
+      final file = io.File(filePath);
+      await file.writeAsBytes(csvBytes);
+      print('✅ CSV saved: $filePath');
+    }
+  }
+
+  /// Export & langsung SHARE CSV ke aplikasi lain (mobile only)
+  static Future<void> shareAll({String filename = 'expenses.csv'}) async {
+    final list = ExpenseService.instance.expenses;
+    final csvString = _buildCsv(list);
+    final dir = await getApplicationDocumentsDirectory();
+    final filePath = path.join(dir.path, filename);
+    final file = io.File(filePath);
+    await file.writeAsString(csvString);
+    await Share.shareXFiles([XFile(file.path)], text: 'Here is my exported expense data.');
+  }
+
+  // =================== Builder CSV ===================
+  static String _buildCsv(List<Expense> list) {
+    final buffer = StringBuffer();
+    final headers = ['Title', 'Amount', 'Category', 'Date', 'Description'];
+    buffer.writeln(headers.join(','));
+
+    for (final e in list) {
+      final row = [
+        _escapeCsv(e.title),
+        e.amount.toStringAsFixed(0),
+        _escapeCsv(e.category),
+        _formatDate(e.date),
+        _escapeCsv(e.description),
+      ];
+      buffer.writeln(row.join(','));
+    }
+
+    return utf8.decode(utf8.encode(buffer.toString()));
+  }
+
+  // =================== Helper ===================
+  static String _escapeCsv(String value) {
+    if (value.contains(',') || value.contains('"') || value.contains('\n')) {
+      value = value.replaceAll('"', '""');
+      return '"$value"';
+    }
+    return value;
+  }
 
   static String _formatDate(DateTime d) =>
       '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
-
-  static String _formatDateTime(DateTime d) =>
-      '${_formatDate(d)} ${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
 }

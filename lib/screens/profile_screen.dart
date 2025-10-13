@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../screens/login_screen.dart';
 import 'profile_edit_screen.dart';
+import '../screens/settings_screen.dart';
+import '../screens/export_data_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -110,23 +112,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 CircleAvatar(
                   radius: 55,
                   backgroundColor: Colors.green.shade200,
-                  backgroundImage: !kIsWeb && _profileImage != null
-                      ? FileImage(_profileImage!)
-                      : (kIsWeb && _webImageBytes != null
-                          ? MemoryImage(_webImageBytes!) as ImageProvider
-                          : null),
-                  child: (_profileImage == null && _webImageBytes == null)
-                      ? Text(
-                          user.username.isNotEmpty
-                              ? user.username[0].toUpperCase()
-                              : "?",
-                          style: const TextStyle(
-                            fontSize: 40,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        )
-                      : null,
+                  backgroundImage:
+                      !kIsWeb && _profileImage != null
+                          ? FileImage(_profileImage!)
+                          : (kIsWeb && _webImageBytes != null
+                              ? MemoryImage(_webImageBytes!) as ImageProvider
+                              : null),
+                  child:
+                      (_profileImage == null && _webImageBytes == null)
+                          ? Text(
+                            user.username.isNotEmpty
+                                ? user.username[0].toUpperCase()
+                                : "?",
+                            style: const TextStyle(
+                              fontSize: 40,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          )
+                          : null,
                 ),
 
                 // ✏️ Tombol Edit
@@ -205,13 +209,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: Icons.settings_rounded,
               label: "Settings",
               color: const Color(0xFF6B4EFF),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                );
+              },
             ),
             _divider(),
             _menuItem(
               icon: Icons.file_upload_rounded,
               label: "Export Data",
               color: const Color(0xFF6B4EFF),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ExportDataScreen()),
+                );
+              },
             ),
+
             _divider(),
 
             // 🔴 LOGOUT (with bottom sheet)
@@ -224,7 +241,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   context: context,
                   backgroundColor: Colors.white,
                   shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(20),
+                    ),
                   ),
                   builder: (context) {
                     return Padding(
@@ -264,9 +283,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
                                   ),
-                                  onPressed: () => Navigator.pop(context, false),
+                                  onPressed:
+                                      () => Navigator.pop(context, false),
                                   child: const Text(
                                     "No",
                                     style: TextStyle(
@@ -284,7 +306,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     shape: RoundedRectangleBorder(
                                       borderRadius: BorderRadius.circular(12),
                                     ),
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
                                   ),
                                   onPressed: () => Navigator.pop(context, true),
                                   child: const Text(
@@ -360,9 +384,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   Widget _divider() => Divider(color: Colors.grey.shade300, thickness: 1);
 }
-
-
-
 
 // import 'package:flutter/material.dart';
 // import '../services/auth_service.dart';
