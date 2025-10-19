@@ -109,15 +109,6 @@ Contoh tampilan Kategori.
 Contoh tampilan Profile.
 ---
 
-### 🔐 Setting  
-<!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
-<img width="1374" height="870" alt="Image" src="https://github.com/user-attachments/assets/9f5e4102-594e-4e4a-b719-161c62c369b0" /> />
-
-
-> **Deskripsi:**  
-Contoh tampilan Setting.
----
-
 
 ### 🔐 Setting  
 <!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
