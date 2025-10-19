@@ -1,7 +1,10 @@
-## 🚀 SAFRIZAL RAHMAN_19_SIB 3G
-2341760151
+# 🚀 SAFRIZAL RAHMAN
 
-# 💸 Expense Tracker App
+## Absen  : 19
+## Kelas  : 3G
+## NIM : 2341760151
+
+## 💸 Expense Manager App
 
 A modern Flutter application designed to help you **track daily expenses** easily and beautifully.  
 This app combines clean UI, smooth animations, and an intuitive user experience — from the **splash screen** to **authentication flow**.
@@ -11,7 +14,7 @@ This app combines clean UI, smooth animations, and an intuitive user experience 
 ## 🖼️ App Preview
 
 ### 🪪 Logo  
-![Logo](https://github.com/user-attachments/assets/3ceb835b-48f1-4a0f-a892-6da367018157)
+<!-- ![Logo](https://github.com/user-attachments/assets/3ceb835b-48f1-4a0f-a892-6da367018157) -->
 <img width="440" height="956" alt="Image" src="https://github.com/user-attachments/assets/3ceb835b-48f1-4a0f-a892-6da367018157" />
 
 
@@ -22,7 +25,7 @@ Melambangkan gaya minimalis & profesional, sebagai identitas visual aplikasi pen
 ---
 
 ### ⚡ Splash Screen  
-![Splash](https://github.com/user-attachments/assets/04c8c8ed-9965-479e-9164-47780d05c6a4)
+<!-- ![Splash](https://github.com/user-attachments/assets/04c8c8ed-9965-479e-9164-47780d05c6a4) -->
 <img width="440" height="956" alt="Image" src="https://github.com/user-attachments/assets/04c8c8ed-9965-479e-9164-47780d05c6a4" />
 
 
@@ -34,7 +37,7 @@ Biasanya diatur dengan `Future.delayed` untuk transisi ke halaman berikutnya.
 ---
 
 ### 🎨 Onboarding Screen  
-![Onboarding](https://github.com/user-attachments/assets/38474db7-7cb2-462f-9e7a-20ca72be8c59)
+<!-- ![Onboarding](https://github.com/user-attachments/assets/38474db7-7cb2-462f-9e7a-20ca72be8c59) -->
 <img width="440" height="956" alt="Image" src="https://github.com/user-attachments/assets/38474db7-7cb2-462f-9e7a-20ca72be8c59" />
 
 
@@ -50,7 +53,7 @@ Setelah onboarding selesai, pengguna diarahkan ke halaman login.
 ---
 
 ### 🔐 Login & Signup Page  
-![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a)
+<!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
 <img width="440" height="956" alt="Image" src="https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a" />
 
 
