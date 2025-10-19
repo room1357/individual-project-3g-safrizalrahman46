@@ -69,11 +69,84 @@ Dilengkapi dengan validasi form, tombol interaktif, dan navigasi antar halaman.
 
 <!-- ### 📱 Tampilan UI Aplikasi   -->
 
+### 🔐 Overview (Masih terus Berkembang)  
+<!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
+<img width="440" height="956" alt="Image" src="![Image](https://github.com/user-attachments/assets/2351b93b-7906-4834-a94a-2272567085fc)" />
+
+
 > **Deskripsi:**  
 Contoh tampilan utama aplikasi setelah login.  
 Menampilkan daftar transaksi, ringkasan keuangan, dan tombol aksi untuk menambah atau mengedit pengeluaran dengan tampilan yang modern dan responsif.
 
+
+
+### 🔐 Export Page   
+<!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
+<img width="440" height="956" alt="Image" src="![Image](https://github.com/user-attachments/assets/b05dc3a8-61ad-456c-9d57-b8073bc1585b)" />
+
+
+> **Deskripsi:**  
+Contoh tampilan Export.
 ---
+
+### 🔐 Category  
+<!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
+<img width="440" height="956" alt="Image" src="![Image](https://github.com/user-attachments/assets/3b3d5e59-a901-45b7-964c-f134d3247d36)" />
+
+
+> **Deskripsi:**  
+Contoh tampilan Kategori.
+---
+
+### 🔐 Profile  
+<!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
+<img width="1304" height="838" alt="Image" src="https://github.com/user-attachments/assets/4d390918-d1db-43c8-bcaa-3b4d55cae229" /> />
+
+
+> **Deskripsi:**  
+Contoh tampilan Profile.
+---
+
+### 🔐 Setting  
+<!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
+<img width="1374" height="870" alt="Image" src="https://github.com/user-attachments/assets/9f5e4102-594e-4e4a-b719-161c62c369b0" /> />
+
+
+> **Deskripsi:**  
+Contoh tampilan Setting.
+---
+
+
+### 🔐 Setting  
+<!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
+<img width="1374" height="870" alt="Image" src="https://github.com/user-attachments/assets/9f5e4102-594e-4e4a-b719-161c62c369b0" /> />
+
+
+> **Deskripsi:**  
+Contoh tampilan Setting.
+
+---
+
+
+### 🔐 Reminder  
+<!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
+<img width="1207" height="838" alt="Image" src="https://github.com/user-attachments/assets/68b15ac0-12f1-444f-969c-143034ff3a42" /> />
+
+
+> **Deskripsi:**  
+Contoh tampilan Reminder.
+---
+
+
+### 🔐 Logout  
+<!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
+<img width="985" height="643" alt="Image" src="https://github.com/user-attachments/assets/7d7a8f53-5164-46c6-bf32-a66cbead2e55" /> /> />
+
+
+> **Deskripsi:**  
+Contoh tampilan Logout.
+---
+
 
 ## 🚀 Features
 
