@@ -71,7 +71,7 @@ Dilengkapi dengan validasi form, tombol interaktif, dan navigasi antar halaman.
 
 ### 🔐 Overview (Masih terus Berkembang)  
 <!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
-<img width="440" height="956" alt="Image" src="![Image](https://github.com/user-attachments/assets/2351b93b-7906-4834-a94a-2272567085fc)" />
+<img width="1767" height="874" alt="Image" src="https://github.com/user-attachments/assets/b8e4892a-b24c-4029-a304-d7612b66521f" />
 
 
 > **Deskripsi:**  
@@ -82,7 +82,7 @@ Menampilkan daftar transaksi, ringkasan keuangan, dan tombol aksi untuk menambah
 
 ### 🔐 Export Page   
 <!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
-<img width="440" height="956" alt="Image" src="![Image](https://github.com/user-attachments/assets/b05dc3a8-61ad-456c-9d57-b8073bc1585b)" />
+<img width="1541" height="899" alt="Image" src="https://github.com/user-attachments/assets/5d39de55-d031-4cac-8f4b-8bea44b4d8af" />
 
 
 > **Deskripsi:**  
@@ -91,7 +91,7 @@ Contoh tampilan Export.
 
 ### 🔐 Category  
 <!-- ![Auth](https://github.com/user-attachments/assets/381a07a7-e885-46e1-9d30-794bfe1dad1a) -->
-<img width="440" height="956" alt="Image" src="![Image](https://github.com/user-attachments/assets/3b3d5e59-a901-45b7-964c-f134d3247d36)" />
+<img width="655" height="748" alt="Image" src="https://github.com/user-attachments/assets/62c98d80-f157-41fd-b953-9b46b1d78d9a" />
 
 
 > **Deskripsi:**  
