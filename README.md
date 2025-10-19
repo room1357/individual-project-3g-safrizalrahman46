@@ -11,6 +11,8 @@ This app combines clean UI, smooth animations, and an intuitive user experience 
 
 ---
 
+#### LINK DESIGN UI UX DI FIGMA : https://www.figma.com/design/243qwkz53EItHbDdPEfxhy/INI-PBL-MUNGKIN?node-id=0-1&t=c9v4KNfLO0Kamy6w-1
+
 ## 🖼️ App Preview
 
 ### 🪪 Logo  
