@@ -4,10 +4,15 @@
 ## Kelas  : 3G
 ## NIM : 2341760151
 
-## 💸 Expense Manager App
+## 💸 Expense Manager App (MINTRA)
 
 A modern Flutter application designed to help you **track daily expenses** easily and beautifully.  
 This app combines clean UI, smooth animations, and an intuitive user experience — from the **splash screen** to **authentication flow**.
+
+Filosofi Aplikasi
+Dari Mint (warna hijau + uang) + Control.
+→ Mewakili kontrol finansial dengan kesegaran dan stabilitas.
+Makna: “Segar, seimbang, dan terkontrol.
 
 ---
 
