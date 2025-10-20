@@ -93,26 +93,35 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             const SizedBox(height: 16),
 
             // 🔹 Summary Cards
+            // 🔹 Summary Cards
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ✅ Card Total Expense: bisa diklik ke ExpenseListScreen
                 Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const ExpenseListScreen(),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8.0),
+                    child: Material(
+                      color: Colors.transparent,
+                      borderRadius: BorderRadius.circular(24),
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(24),
+                        onTap: () {
+                          debugPrint("✅ Total Expense tapped");
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => const ExpenseListScreen(),
+                            ),
+                          );
+                        },
+                        child: _summaryCard(
+                          title: "Total Expense",
+                          value: rp(svc.totalAll),
+                          color: Colors.white,
+                          textColor: Colors.black,
+                          icon: Icons.credit_card_rounded,
+                          iconBg: const Color(0xFFF5F5F5),
                         ),
-                      );
-                    },
-                    child: _summaryCard(
-                      title: "Total Expense",
-                      value: rp(svc.totalAll),
-                      color: Colors.white,
-                      textColor: Colors.black,
-                      icon: Icons.credit_card_rounded,
-                      iconBg: const Color(0xFFF5F5F5),
+                      ),
                     ),
                   ),
                 ),
@@ -168,9 +177,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         width: selectedTab == i ? 32 : 10,
                         height: 3,
                         decoration: BoxDecoration(
-                          color: selectedTab == i
-                              ? const Color(0xFF22C55E)
-                              : const Color(0xFFDEDEDE),
+                          color:
+                              selectedTab == i
+                                  ? const Color(0xFF22C55E)
+                                  : const Color(0xFFDEDEDE),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       );
@@ -218,16 +228,19 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               )
             else
               Column(
-                children: expenses.reversed
-                    .take(5)
-                    .map((e) => _expenseTile(
-                          title: e.category,
-                          date:
-                              "${e.date.day} ${_monthName(e.date.month)} ${e.date.year}",
-                          source: e.description ?? '',
-                          amount: "- ${rp(e.amount)}",
-                        ))
-                    .toList(),
+                children:
+                    expenses.reversed
+                        .take(5)
+                        .map(
+                          (e) => _expenseTile(
+                            title: e.category,
+                            date:
+                                "${e.date.day} ${_monthName(e.date.month)} ${e.date.year}",
+                            source: e.description ?? '',
+                            amount: "- ${rp(e.amount)}",
+                          ),
+                        )
+                        .toList(),
               ),
 
             const SizedBox(height: 100),
@@ -284,9 +297,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: color == Colors.white
-                ? Colors.black.withOpacity(0.06)
-                : const Color(0xFF8EE5B5).withOpacity(0.3),
+            color:
+                color == Colors.white
+                    ? Colors.black.withOpacity(0.06)
+                    : const Color(0xFF8EE5B5).withOpacity(0.3),
             blurRadius: 15,
             offset: const Offset(0, 4),
           ),
@@ -308,17 +322,24 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title,
-                  style: TextStyle(
-                      color: textColor.withOpacity(0.9), fontSize: 13)),
+              Text(
+                title,
+                style: TextStyle(
+                  color: textColor.withOpacity(0.9),
+                  fontSize: 13,
+                ),
+              ),
               const SizedBox(height: 6),
-              Text(value,
-                  style: TextStyle(
-                      color: textColor,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700)),
+              Text(
+                value,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -350,9 +371,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             color: isActive ? const Color(0xFF6EE7B7) : Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color: isActive
-                  ? const Color(0xFF6EE7B7)
-                  : const Color(0xFFE8E8E8),
+              color:
+                  isActive ? const Color(0xFF6EE7B7) : const Color(0xFFE8E8E8),
               width: 1,
             ),
           ),
@@ -388,33 +408,47 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               color: const Color(0xFFE8E8E8),
               borderRadius: BorderRadius.circular(14),
             ),
-            child: const Icon(Icons.receipt_long_outlined,
-                color: Colors.grey, size: 24),
+            child: const Icon(
+              Icons.receipt_long_outlined,
+              color: Colors.grey,
+              size: 24,
+            ),
           ),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600, fontSize: 15)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 15,
+                  ),
+                ),
                 const SizedBox(height: 3),
-                Text(date,
-                    style:
-                        TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+                Text(
+                  date,
+                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+                ),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(amount,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.w600, fontSize: 15)),
+              Text(
+                amount,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
               const SizedBox(height: 3),
-              Text(source,
-                  style: TextStyle(color: Colors.grey.shade500, fontSize: 12)),
+              Text(
+                source,
+                style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
+              ),
             ],
           ),
         ],
@@ -435,12 +469,11 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       'September',
       'Oktober',
       'November',
-      'Desember'
+      'Desember',
     ];
     return months[m - 1];
   }
 }
-
 
 // // import 'package:flutter/material.dart';
 // // import 'login_screen.dart';
