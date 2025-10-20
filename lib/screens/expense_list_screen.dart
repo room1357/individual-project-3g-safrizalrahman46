@@ -9,7 +9,8 @@ class ExpenseListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final svc = Provider.of<ExpenseService>(context);
+    // Gunakan listen: true agar widget rebuild ketika data berubah
+    final svc = context.watch<ExpenseService>();
     final expenses = svc.expenses;
 
     return Scaffold(
@@ -81,19 +82,24 @@ class ExpenseListScreen extends StatelessWidget {
                             if (value == 'details') {
                               _showDetailsDialog(context, e);
                             } else if (value == 'edit') {
-                              final ok = await Navigator.pushNamed(
-                                context,
-                                '/edit',
-                                arguments: e,
-                              );
-                              if (ok == true && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Data berhasil diperbarui'),
-                                  ),
-                                );
-                              }
-                            } else if (value == 'delete') {
+  final ok = await Navigator.pushNamed(
+    context,
+    '/edit',
+    arguments: e,
+  );
+
+  if (ok == true && context.mounted) {
+    // 🔁 Refresh data dari provider biar kategori baru muncul
+    await Provider.of<ExpenseService>(context, listen: false).loadInitialData();
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Data berhasil diperbarui'),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+} else if (value == 'delete') {
                               _confirmDelete(context, svc, e);
                             }
                           },

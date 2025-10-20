@@ -4,9 +4,7 @@ import '../models/expense.dart';
 import '../services/expense_service.dart';
 
 class EditExpenseScreen extends StatefulWidget {
-  final String? expenseId;
-
-  const EditExpenseScreen({super.key, this.expenseId});
+  const EditExpenseScreen({super.key});
 
   @override
   State<EditExpenseScreen> createState() => _EditExpenseScreenState();
@@ -18,18 +16,26 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   late TextEditingController _titleController;
   late TextEditingController _amountController;
   late TextEditingController _descController;
+  String? _selectedCategory;
   late Expense expense;
-  String? _selectedCategory; // untuk dropdown value
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     expense = ModalRoute.of(context)!.settings.arguments as Expense;
 
+    final svc = Provider.of<ExpenseService>(context, listen: false);
+    final categories = svc.categories;
+
     _titleController = TextEditingController(text: expense.title);
     _amountController = TextEditingController(text: expense.amount.toString());
     _descController = TextEditingController(text: expense.description ?? '');
     _selectedCategory = expense.category;
+
+    // Pastikan dropdown tetap valid
+    if (!categories.any((c) => c.name == _selectedCategory)) {
+      _selectedCategory = categories.isNotEmpty ? categories.first.name : null;
+    }
   }
 
   @override
@@ -43,7 +49,7 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     final svc = Provider.of<ExpenseService>(context, listen: false);
-    final categories = svc.categories; // ambil data kategori
+    final categories = svc.categories;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9FAFB),
@@ -59,19 +65,18 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              // ===== Title =====
               TextFormField(
                 controller: _titleController,
                 decoration: const InputDecoration(
                   labelText: "Title",
                   border: OutlineInputBorder(),
                 ),
-                validator:
-                    (v) => v == null || v.isEmpty ? "Title wajib diisi" : null,
+                validator: (v) =>
+                    v == null || v.isEmpty ? "Title wajib diisi" : null,
               ),
               const SizedBox(height: 12),
 
-              // ===== Category (Dropdown) =====
+              // ===== Category Dropdown =====
               DropdownButtonFormField<String>(
                 value: _selectedCategory,
                 decoration: const InputDecoration(
@@ -79,24 +84,22 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                   border: OutlineInputBorder(),
                 ),
                 items: categories
-                    .map(
-                      (c) => DropdownMenuItem<String>(
-                        value: c.name,
-                        child: Text(c.name),
-                      ),
-                    )
+                    .map((c) => DropdownMenuItem<String>(
+                          value: c.name,
+                          child: Text(c.name),
+                        ))
                     .toList(),
                 onChanged: (value) {
                   setState(() {
                     _selectedCategory = value;
                   });
+                  print('🟢 Category changed to: $value');
                 },
                 validator: (v) =>
                     v == null || v.isEmpty ? "Category wajib dipilih" : null,
               ),
               const SizedBox(height: 12),
 
-              // ===== Amount =====
               TextFormField(
                 controller: _amountController,
                 keyboardType: TextInputType.number,
@@ -104,12 +107,11 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                   labelText: "Amount",
                   border: OutlineInputBorder(),
                 ),
-                validator:
-                    (v) => v == null || v.isEmpty ? "Amount wajib diisi" : null,
+                validator: (v) =>
+                    v == null || v.isEmpty ? "Amount wajib diisi" : null,
               ),
               const SizedBox(height: 12),
 
-              // ===== Description =====
               TextFormField(
                 controller: _descController,
                 decoration: const InputDecoration(
@@ -120,7 +122,6 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
               ),
               const SizedBox(height: 24),
 
-              // ===== Save Button =====
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.black,
@@ -131,26 +132,31 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
                 ),
                 onPressed: () async {
                   if (_formKey.currentState!.validate()) {
-                    final updatedExpense = Expense(
+                    final updated = Expense(
                       id: expense.id,
-                      title: _titleController.text,
+                      title: _titleController.text.trim(),
                       category: _selectedCategory ?? expense.category,
-                      amount: double.parse(_amountController.text),
-                      description: _descController.text,
+                      amount: double.tryParse(_amountController.text) ?? 0.0,
+                      description: _descController.text.trim(),
                       date: expense.date,
                     );
 
-                    await svc.updateExpense(updatedExpense);
+                    print(
+                        '🟡 Saving update: ${updated.title} - ${updated.category}');
+
+                    // Update expense di service
+                    await svc.updateExpense(updated);
+
+                    // Pastikan data terbaru dimuat kembali dari storage
+                    await svc.loadInitialData();
+
+                    // 🔥 Tambahan penting: pastikan state di-refresh
+                    setState(() {
+                      _selectedCategory = updated.category;
+                    });
 
                     if (mounted) {
                       Navigator.pop(context, true);
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Perubahan berhasil disimpan"),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
                     }
                   }
                 },

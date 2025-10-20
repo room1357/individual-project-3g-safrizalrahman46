@@ -46,21 +46,61 @@ class ExpenseService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> updateExpense(Expense updatedExpense) async {
-    final prefs = await SharedPreferences.getInstance();
+  // Future<void> updateExpense(Expense updatedExpense) async {
+  //   final prefs = await SharedPreferences.getInstance();
 
-    // cari index dari expense lama
-    final index = _expenses.indexWhere((e) => e.id == updatedExpense.id);
-    if (index != -1) {
-      _expenses[index] = updatedExpense; // update di list memori
+  //   // cari index dari expense lama
+  //   final index = _expenses.indexWhere((e) => e.id == updatedExpense.id);
+  //   if (index != -1) {
+  //     _expenses[index] = updatedExpense; // update di list memori
 
-      // simpan ulang semua data ke SharedPreferences
-      final expensesJson = _expenses.map((e) => e.toJson()).toList();
-      await prefs.setString('expenses', jsonEncode(expensesJson));
+  //     // simpan ulang semua data ke SharedPreferences
+  //     final expensesJson = _expenses.map((e) => e.toJson()).toList();
+  //     await prefs.setString('expenses', jsonEncode(expensesJson));
 
-      notifyListeners();
-    }
+  //     notifyListeners();
+  //   }
+  // }
+
+Future<void> updateExpense(Expense updatedExpense) async {
+  final index = _expenses.indexWhere((e) => e.id == updatedExpense.id);
+  if (index != -1) {
+    // 🔹 Pastikan kategori valid di daftar kategori
+    final matchedCategory = _categories.firstWhere(
+      (c) => c.name == updatedExpense.category,
+      orElse: () => CategoryModel(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: updatedExpense.category,
+      ),
+    );
+
+    // 🔹 Ganti data lama dengan yang baru
+    _expenses[index] = Expense(
+      id: updatedExpense.id,
+      title: updatedExpense.title,
+      amount: updatedExpense.amount,
+      category: matchedCategory.name,
+      date: updatedExpense.date,
+      description: updatedExpense.description,
+    );
+
+    // 🔹 Simpan ulang ke storage
+    await _storage.saveExpenses(_expenses);
+
+    print('✅ Updated expense saved: ${updatedExpense.title} (${updatedExpense.category})');
+
+    // 🔹 Reload dari storage biar kategori & data sinkron
+    await loadInitialData();
+
+    // 🔹 Panggil notify agar UI langsung refresh
+    notifyListeners();
+  } else {
+    print('⚠️ Expense not found for update: ${updatedExpense.id}');
   }
+}
+
+
+
 
   Future<void> deleteExpense(String id) async {
     _expenses.removeWhere((x) => x.id == id);

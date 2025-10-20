@@ -7,6 +7,8 @@ import '../models/expense.dart';
 import 'profile_screen.dart';
 import '../widgets/custom_bottom_nav.dart';
 import 'expense_list_screen.dart'; // ✅ tambahkan import ini
+import 'export_data_screen.dart';
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -356,11 +358,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           } else if (index == 1) {
             Navigator.pushNamed(context, '/stats');
           } else if (index == 2) {
-            await ExportPdf.exportAll(filename: 'expenses.pdf');
-            if (!context.mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('PDF berhasil diekspor!')),
-            );
+           Navigator.pushNamed(context, '/ExportScreen');
           }
         },
         child: AnimatedContainer(

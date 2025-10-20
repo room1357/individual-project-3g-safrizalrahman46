@@ -10,6 +10,7 @@ import 'screens/edit_expense_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'screens/category_screen.dart';
 import 'screens/reminder_screen.dart';
+import 'screens/export_data_screen.dart';
 
 // Services
 import 'services/expense_service.dart';
@@ -71,6 +72,8 @@ class MyApp extends StatelessWidget {
         '/stats': (_) => const StatisticsScreen(),
         '/categories': (_) => const CategoryScreen(),
         '/reminder': (_) => const ReminderScreen(),
+        '/ExportScreen': (context) => const ExportDataScreen(), // ✅ pastikan ini ada
+
         // jangan daftarkan '/edit' di sini supaya onGenerateRoute menangani dan kita
         // tetap mengoper argumen lewat settings.arguments
       },
