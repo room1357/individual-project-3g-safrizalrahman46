@@ -48,13 +48,13 @@ class _ReminderScreenState extends State<ReminderScreen> {
                 onPressed: () => Navigator.pop(context),
               ),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: CircleAvatar(
-                    backgroundColor: Colors.green.shade100,
-                    child: const Icon(Icons.person, color: Colors.black54),
-                  ),
-                )
+                // Padding(
+                //   padding: const EdgeInsets.only(right: 16),
+                //   child: CircleAvatar(
+                //     backgroundColor: Colors.green.shade100,
+                //     child: const Icon(Icons.person, color: Colors.black54),
+                //   ),
+                // )
               ],
             ),
 

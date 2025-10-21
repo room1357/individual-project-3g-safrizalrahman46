@@ -63,14 +63,18 @@ class ExpenseListScreen extends StatelessWidget {
                         title: Text(
                           e.category,
                           style: const TextStyle(
-                              fontWeight: FontWeight.w600, fontSize: 16),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
                         ),
                         subtitle: Padding(
                           padding: const EdgeInsets.only(top: 4),
                           child: Text(
                             "${e.description ?? '-'}\n${e.date.day}-${e.date.month}-${e.date.year}",
                             style: TextStyle(
-                                color: Colors.grey.shade600, fontSize: 13),
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                         isThreeLine: true,
@@ -82,44 +86,48 @@ class ExpenseListScreen extends StatelessWidget {
                             if (value == 'details') {
                               _showDetailsDialog(context, e);
                             } else if (value == 'edit') {
-  final ok = await Navigator.pushNamed(
-    context,
-    '/edit',
-    arguments: e,
-  );
+                              final ok = await Navigator.pushNamed(
+                                context,
+                                '/edit',
+                                arguments: e,
+                              );
 
-  if (ok == true && context.mounted) {
-    // 🔁 Refresh data dari provider biar kategori baru muncul
-    await Provider.of<ExpenseService>(context, listen: false).loadInitialData();
+                              if (ok == true && context.mounted) {
+                                // 🔁 Refresh data dari provider biar kategori baru muncul
+                                await Provider.of<ExpenseService>(
+                                  context,
+                                  listen: false,
+                                ).loadInitialData();
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Data berhasil diperbarui'),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
-} else if (value == 'delete') {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Data berhasil diperbarui'),
+                                    behavior: SnackBarBehavior.floating,
+                                  ),
+                                );
+                              }
+                            } else if (value == 'delete') {
                               _confirmDelete(context, svc, e);
                             }
                           },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'details',
-                              child: Text('Details'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'edit',
-                              child: Text('Edit'),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Text(
-                                'Delete',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
+                          itemBuilder:
+                              (context) => [
+                                const PopupMenuItem(
+                                  value: 'details',
+                                  child: Text('Details'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Text('Edit'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text(
+                                    'Delete',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ],
                           icon: const Icon(Icons.more_vert),
                         ),
                       ),
@@ -137,27 +145,32 @@ class ExpenseListScreen extends StatelessWidget {
   void _showDetailsDialog(BuildContext context, Expense e) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Expense Details'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _detailRow('Category', e.category),
-            _detailRow('Amount', rp(e.amount)),
-            _detailRow('Description', e.description ?? '-'),
-            _detailRow(
-                'Date', "${e.date.day}-${e.date.month}-${e.date.year}"),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
+      builder:
+          (_) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            title: const Text('Expense Details'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _detailRow('Category', e.category),
+                _detailRow('Amount', rp(e.amount)),
+                _detailRow('Description', e.description ?? '-'),
+                _detailRow(
+                  'Date',
+                  "${e.date.day}-${e.date.month}-${e.date.year}",
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
+              ),
+            ],
           ),
-        ],
-      ),
     );
   }
 
@@ -181,36 +194,33 @@ class ExpenseListScreen extends StatelessWidget {
   }
 
   // === Dialog Konfirmasi Hapus ===
-  void _confirmDelete(
-      BuildContext context, ExpenseService svc, Expense e) {
+  void _confirmDelete(BuildContext context, ExpenseService svc, Expense e) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Hapus Pengeluaran'),
-        content: Text('Yakin ingin menghapus "${e.category}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+      builder:
+          (_) => AlertDialog(
+            title: const Text('Hapus Pengeluaran'),
+            content: Text('Yakin ingin menghapus "${e.category}"?'),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Batal'),
+              ),
+              TextButton(
+                onPressed: () {
+                  svc.deleteExpense(e.id);
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Data berhasil dihapus'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                },
+                child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+              ),
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              svc.deleteExpense(e.id);
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Data berhasil dihapus'),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            child: const Text(
-              'Hapus',
-              style: TextStyle(color: Colors.red),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

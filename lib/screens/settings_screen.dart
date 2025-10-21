@@ -35,14 +35,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 16),
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.green.shade100,
-              child: const Icon(Icons.person, color: Colors.black54, size: 18),
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(right: 16),
+          //   child: CircleAvatar(
+          //     radius: 16,
+          //     backgroundColor: Colors.green.shade100,
+          //     child: const Icon(Icons.person, color: Colors.black54, size: 18),
+          //   ),
+          // ),
         ],
       ),
       body: ListView(
