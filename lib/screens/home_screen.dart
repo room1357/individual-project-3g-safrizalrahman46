@@ -6,9 +6,13 @@ import '../utils/export_utils.dart';
 import '../models/expense.dart';
 import 'profile_screen.dart';
 import '../widgets/custom_bottom_nav.dart';
-import 'expense_list_screen.dart'; // ✅ tambahkan import ini
+import 'expense_list_screen.dart';
 import 'export_data_screen.dart';
 import '../services/auth_service.dart';
+import 'category_screen.dart';
+import 'statistics_screen.dart';
+import 'settings_screen.dart';
+import 'reminder_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -45,6 +49,12 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final svc = Provider.of<ExpenseService>(context);
     final expenses = svc.expenses;
     final categories = svc.categories;
+
+    // ===== Filtered expenses bulan ini =====
+    final now = DateTime.now();
+    final filteredExpenses = expenses
+        .where((e) => e.date.year == now.year && e.date.month == now.month)
+        .toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
@@ -94,51 +104,94 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           children: [
             const SizedBox(height: 16),
 
-            // 🔹 Summary Cards
-            // 🔹 Summary Cards
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(bottom: 8.0),
-                    child: Material(
-                      color: Colors.transparent,
-                      borderRadius: BorderRadius.circular(24),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(24),
-                        onTap: () {
-                          debugPrint("✅ Total Expense tapped");
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const ExpenseListScreen(),
-                            ),
-                          );
-                        },
-                        child: _summaryCard(
-                          title: "Total Expense",
-                          value: rp(svc.totalAll),
-                          color: Colors.white,
-                          textColor: Colors.black,
-                          icon: Icons.credit_card_rounded,
-                          iconBg: const Color(0xFFF5F5F5),
-                        ),
-                      ),
+            // 🔹 Summary Cards - Row horizontal scroll
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildCardWrapper(
+                    child: _summaryCard(
+                      title: "Total Expense",
+                      value: rp(svc.totalAll),
+                      color: Colors.white,
+                      textColor: Colors.black,
+                      icon: Icons.credit_card_rounded,
+                      iconBg: const Color(0xFFF5F5F5),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const ExpenseListScreen(),
+                          ),
+                        );
+                      },
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _summaryCard(
-                    title: "Categories",
-                    value: categories.length.toString(),
-                    color: const Color(0xFF8EE5B5),
-                    textColor: Colors.white,
-                    icon: Icons.category_outlined,
-                    iconBg: Colors.white.withOpacity(0.25),
+                  _buildCardWrapper(
+                    child: _summaryCard(
+                      title: "Categories",
+                      value: categories.length.toString(),
+                      color: const Color(0xFF8EE5B5),
+                      textColor: Colors.white,
+                      icon: Icons.category_outlined,
+                      iconBg: Colors.white.withOpacity(0.25),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const CategoryScreen(),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                  _buildCardWrapper(
+                    child: _summaryCard(
+                      title: "Monthly Budget",
+                      value: rp(svc.monthlyBudget),
+                      color: const Color(0xFFFFC107),
+                      textColor: Colors.black,
+                      icon: Icons.attach_money_outlined,
+                      iconBg: Colors.white.withOpacity(0.25),
+                    ),
+                  ),
+                  _buildCardWrapper(
+                    child: _summaryCard(
+                      title: "Statistics",
+                      value: filteredExpenses.length.toString(),
+                      color: const Color(0xFF4CAF50),
+                      textColor: Colors.white,
+                      icon: Icons.bar_chart_outlined,
+                      iconBg: Colors.white.withOpacity(0.25),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const StatisticsScreen()),
+                        );
+                      },
+                    ),
+                  ),
+                  _buildCardWrapper(
+                    child: _summaryCard(
+                      title: "Reminder & Setting",
+                      value: "-",
+                      color: const Color(0xFF2196F3),
+                      textColor: Colors.white,
+                      icon: Icons.settings_outlined,
+                      iconBg: Colors.white.withOpacity(0.25),
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => const ReminderScreen()),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             ),
 
             const SizedBox(height: 24),
@@ -179,10 +232,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                         width: selectedTab == i ? 32 : 10,
                         height: 3,
                         decoration: BoxDecoration(
-                          color:
-                              selectedTab == i
-                                  ? const Color(0xFF22C55E)
-                                  : const Color(0xFFDEDEDE),
+                          color: selectedTab == i
+                              ? const Color(0xFF22C55E)
+                              : const Color(0xFFDEDEDE),
                           borderRadius: BorderRadius.circular(2),
                         ),
                       );
@@ -230,19 +282,18 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               )
             else
               Column(
-                children:
-                    expenses.reversed
-                        .take(5)
-                        .map(
-                          (e) => _expenseTile(
-                            title: e.category,
-                            date:
-                                "${e.date.day} ${_monthName(e.date.month)} ${e.date.year}",
-                            source: e.description ?? '',
-                            amount: "- ${rp(e.amount)}",
-                          ),
-                        )
-                        .toList(),
+                children: expenses.reversed
+                    .take(5)
+                    .map(
+                      (e) => _expenseTile(
+                        title: e.category,
+                        date:
+                            "${e.date.day} ${_monthName(e.date.month)} ${e.date.year}",
+                        source: e.description ?? '',
+                        amount: "- ${rp(e.amount)}",
+                      ),
+                    )
+                    .toList(),
               ),
 
             const SizedBox(height: 100),
@@ -282,6 +333,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
+  // === Helper wrapper untuk scroll horizontal
+  Widget _buildCardWrapper({required Widget child}) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 16.0),
+      child: SizedBox(width: 160, child: child),
+    );
+  }
+
   // === Reusable Widgets ===
   Widget _summaryCard({
     required String title,
@@ -290,59 +349,62 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     required Color textColor,
     required IconData icon,
     required Color iconBg,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      height: 170,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color:
-                color == Colors.white
-                    ? Colors.black.withOpacity(0.06)
-                    : const Color(0xFF8EE5B5).withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(14),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 170,
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: color == Colors.white
+                  ? Colors.black.withOpacity(0.06)
+                  : const Color(0xFF8EE5B5).withOpacity(0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 4),
             ),
-            child: Icon(icon, color: textColor, size: 26),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  color: textColor.withOpacity(0.9),
-                  fontSize: 13,
-                ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: BorderRadius.circular(14),
               ),
-              const SizedBox(height: 6),
-              Text(
-                value,
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
+              child: Icon(icon, color: textColor, size: 26),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: textColor.withOpacity(0.9),
+                    fontSize: 13,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+                const SizedBox(height: 6),
+                Text(
+                  value,
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -358,7 +420,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           } else if (index == 1) {
             Navigator.pushNamed(context, '/stats');
           } else if (index == 2) {
-           Navigator.pushNamed(context, '/ExportScreen');
+            Navigator.pushNamed(context, '/ExportScreen');
           }
         },
         child: AnimatedContainer(
@@ -369,8 +431,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             color: isActive ? const Color(0xFF6EE7B7) : Colors.white,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-              color:
-                  isActive ? const Color(0xFF6EE7B7) : const Color(0xFFE8E8E8),
+              color: isActive ? const Color(0xFF6EE7B7) : const Color(0xFFE8E8E8),
               width: 1,
             ),
           ),
@@ -454,7 +515,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  String _monthName(int m) {
+  static String _monthName(int m) {
     const months = [
       'Januari',
       'Februari',
