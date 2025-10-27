@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pemrograman_mobile/screens/massage_screen.dart';
 import 'package:provider/provider.dart';
 import '../services/expense_service.dart';
 import '../utils/currency_utils.dart';
@@ -190,7 +191,29 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       },
                     ),
                   ),
+
+                  _buildCardWrapper(
+                child: _summaryCard(
+                  title: "Massage",
+                  value: "API Data", // Anda bisa ganti value ini
+                  color: const Color(0xFFFFA726), // Warna oranye
+                  textColor: Colors.white,
+                  icon: Icons.message_outlined, // Ikon pesan
+                  iconBg: Colors.white.withOpacity(0.25),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        // Penting: Hapus 'const' karena MassageScreen
+                        // adalah StatefulWidget
+                        builder: (_) => MassageScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
                 ],
+                
               ),
             ),
 
