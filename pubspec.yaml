@@ -26,7 +26,9 @@ dependencies:
   permission_handler: ^11.3.1
   file_saver: ^0.2.9
   csv: ^6.0.0 
-  
+  # Menambahkan dependencies HTTP
+  http: ^0.13.0
+
 
 
   # share_plus_web: ^4.0.0

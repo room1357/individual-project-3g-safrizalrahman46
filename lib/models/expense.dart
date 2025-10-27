@@ -15,24 +15,26 @@ class Expense {
     required this.description,
   });
 
-  /// Membuat objek [Expense] dari JSON
+  /// ✅ Disesuaikan untuk menerima JSON dari API (snake_case)
   factory Expense.fromJson(Map<String, dynamic> j) => Expense(
-        id: j['id'] as String,
-        title: j['title'] as String,
-        amount: (j['amount'] as num).toDouble(),
-        category: j['category'] as String,
-        date: DateTime.parse(j['date'] as String),
-        description: j['description'] as String? ?? '',
+        id: j['id'].toString(), // API bisa mengirim ID sebagai integer
+        title: j['judul'] as String,
+        description: j['isi_post'] as String? ?? '',
+        // Asumsikan backend sudah di-update dengan field di bawah ini
+        amount: (j['amount'] as num? ?? 0).toDouble(),
+        category: j['category'] as String? ?? 'Umum',
+        // Menggunakan 'created_at' dari API atau tanggal saat ini jika tidak ada
+        date: DateTime.tryParse(j['created_at'] ?? '') ?? DateTime.now(),
       );
 
-  /// Mengubah [Expense] menjadi JSON
+  /// ✅ Disesuaikan untuk mengirim JSON ke API (snake_case)
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
+        // 'id' dan 'date' biasanya tidak dikirim saat membuat/mengedit data,
+        // karena diatur oleh server.
+        'judul': title,
+        'isi_post': description,
         'amount': amount,
         'category': category,
-        'date': date.toIso8601String(),
-        'description': description,
       };
 
   /// Format tampilan amount
@@ -89,7 +91,6 @@ class Expense {
       description.hashCode;
 }
 
-
 // class Expense {
 //   final String id;
 //   final String title;
@@ -107,6 +108,7 @@ class Expense {
 //     required this.description,
 //   });
 
+//   /// Membuat objek [Expense] dari JSON
 //   factory Expense.fromJson(Map<String, dynamic> j) => Expense(
 //         id: j['id'] as String,
 //         title: j['title'] as String,
@@ -116,6 +118,7 @@ class Expense {
 //         description: j['description'] as String? ?? '',
 //       );
 
+//   /// Mengubah [Expense] menjadi JSON
 //   Map<String, dynamic> toJson() => {
 //         'id': id,
 //         'title': title,
@@ -125,16 +128,56 @@ class Expense {
 //         'description': description,
 //       };
 
-//         factory Expense.fromJson(Map<String, dynamic> json) => Expense(
-//         id: json['id'],
-//         title: json['title'],
-//         category: json['category'],
-//         amount: (json['amount'] as num).toDouble(),
-//         description: json['description'],
-//         date: DateTime.parse(json['date']),
-//       );
-
-//   // format tampilan
+//   /// Format tampilan amount
 //   String get formattedAmount => 'Rp ${amount.toStringAsFixed(0)}';
+
+//   /// Format tampilan tanggal
 //   String get formattedDate => '${date.day}/${date.month}/${date.year}';
+
+//   /// Copy objek dengan perubahan tertentu
+//   Expense copyWith({
+//     String? id,
+//     String? title,
+//     double? amount,
+//     String? category,
+//     DateTime? date,
+//     String? description,
+//   }) {
+//     return Expense(
+//       id: id ?? this.id,
+//       title: title ?? this.title,
+//       amount: amount ?? this.amount,
+//       category: category ?? this.category,
+//       date: date ?? this.date,
+//       description: description ?? this.description,
+//     );
+//   }
+
+//   /// Untuk debugging: menampilkan isi objek dalam bentuk teks
+//   @override
+//   String toString() {
+//     return 'Expense(id: $id, title: $title, amount: $amount, category: $category, date: $date, description: $description)';
+//   }
+
+//   /// Membandingkan dua objek [Expense] berdasarkan nilai
+//   @override
+//   bool operator ==(Object other) {
+//     if (identical(this, other)) return true;
+//     return other is Expense &&
+//         other.id == id &&
+//         other.title == title &&
+//         other.amount == amount &&
+//         other.category == category &&
+//         other.date == date &&
+//         other.description == description;
+//   }
+
+//   @override
+//   int get hashCode =>
+//       id.hashCode ^
+//       title.hashCode ^
+//       amount.hashCode ^
+//       category.hashCode ^
+//       date.hashCode ^
+//       description.hashCode;
 // }
