@@ -27,7 +27,7 @@ dependencies:
   file_saver: ^0.2.9
   csv: ^6.0.0 
   # Menambahkan dependencies HTTP
-  http: ^0.13.0
+  http: ^1.2.0
 
 
 
