@@ -16,6 +16,11 @@ Makna: “Segar, seimbang, dan terkontrol.
 
 ---
 
+## 🎥 Demo Video
+
+https://github.com/safrizalrahman46/https://github.com/room1357/individual-project-3g-safrizalrahman46/blob/main/docs/SAFRIZAL_RAHMAN_19_SIB_3G_DOCUMENT_v1.mp4
+
+
 #### LINK DESIGN UI UX DI FIGMA : https://www.figma.com/design/243qwkz53EItHbDdPEfxhy/INI-PBL-MUNGKIN?node-id=0-1&t=c9v4KNfLO0Kamy6w-1
 
 ## 🖼️ App Preview
