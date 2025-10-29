@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pemrograman_mobile/screens/massage_screen.dart';
+import 'package:pemrograman_mobile/screens/news_screen.dart';
 import 'package:provider/provider.dart';
 import '../services/expense_service.dart';
 import '../utils/currency_utils.dart';
@@ -14,6 +15,7 @@ import 'category_screen.dart';
 import 'statistics_screen.dart';
 import 'settings_screen.dart';
 import 'reminder_screen.dart';
+import 'news_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -206,7 +208,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                       MaterialPageRoute(
                         // Penting: Hapus 'const' karena MassageScreen
                         // adalah StatefulWidget
+
                         builder: (_) => MassageScreen(),
+                      ),
+                    );
+                  },
+                ),
+              ),
+
+                // Penamabahan News api + Berita
+                _buildCardWrapper(
+                child: _summaryCard(
+                  title: "News",
+                  value: "API Data", // Anda bisa ganti value ini
+                  color: const Color(0xFFFFA726), // Warna oranye
+                  textColor: Colors.white,
+                  icon: Icons.message_outlined, // Ikon pesan
+                  iconBg: Colors.white.withOpacity(0.25),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        // Penting: Hapus 'const' karena MassageScreen
+                        // adalah StatefulWidget
+                        
+                        builder: (_) => NewsScreen(),
                       ),
                     );
                   },
