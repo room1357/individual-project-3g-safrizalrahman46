@@ -18,7 +18,11 @@ Makna: “Segar, seimbang, dan terkontrol.
 
 ## 🎬 Demo Video
 
-[Klik di sini untuk menonton video demo](https://github.com/room1357/individual-project-3g-safrizalrahman46/blob/main/docs/SAFRIZAL_RAHMAN_19_SIB_3G_DOCUMENT_v1.mp4)
+## 🎥 Demo Project
+Klik gambar di bawah untuk menonton video demo proyek saya di YouTube 👇
+
+[![Tonton Demo di YouTube](https://img.youtube.com/vi/KXJ6J-mh_Mw/maxresdefault.jpg)](https://youtu.be/KXJ6J-mh_Mw)
+
 
 
 
